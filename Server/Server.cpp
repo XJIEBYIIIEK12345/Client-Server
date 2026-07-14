@@ -1,4 +1,6 @@
 #include "Server.h"
+#include <QRandomGenerator64>
+#include <QDataStream>
 
 Server::Server(QObject *parent) : QTcpServer(parent) {
 }
@@ -19,10 +21,11 @@ void Server::incomingConnection(qintptr socketDescriptor) {
     if (socket->setSocketDescriptor(socketDescriptor)) {
         connect(socket, &QTcpSocket::readyRead, this, &Server::read);
         connect(socket, &QTcpSocket::disconnected, this, &Server::disconnect);
-        connectedClientSockets.append(socket);
+        connectedClients.append(socket);
     } else {
         delete socket;
     }
+    this->writeToClient(socket);
 }
 
 void Server::read() {
@@ -30,21 +33,35 @@ void Server::read() {
     if (!dataSender) return;
 
     QByteArray data = dataSender->readAll();
-    QString stringData = QString::fromUtf8(data);
 
-    if (stringData.trimmed() == "echo") {
-        dataSender->write("ok");
-        qDebug() << "Server says: ok" << "\n";
-    } else {
-        dataSender->write("not ok");
-        qDebug() << "Server says: not ok" << "\n";
+    QDataStream stream(data);
+    stream.setByteOrder(QDataStream::BigEndian);
+
+    QList<double> sinus;
+    sinus.reserve(data.size());
+
+    while (!stream.atEnd()) {
+        double val;
+        stream >> val;
+        sinus.append(val);
     }
+
+    qDebug() << "Server received: " << sinus << "from" << dataSender;
+}
+
+void Server::writeToClient(QTcpSocket* client){
+
+    quint64 bytes = QRandomGenerator::global()->bounded(0,1000);
+
+    QDataStream out(client);
+
+    out << bytes;
 }
 
 void Server::disconnect() {
     QTcpSocket* disconnectedSocket = qobject_cast<QTcpSocket*>(sender());
     if (!disconnectedSocket) return;
 
-    connectedClientSockets.removeOne(disconnectedSocket);
+    connectedClients.removeOne(disconnectedSocket);
     disconnectedSocket->deleteLater();
 }

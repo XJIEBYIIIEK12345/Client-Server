@@ -4,13 +4,13 @@
 
 #include <QTcpServer>
 #include <QTcpSocket>
-#include <QList>
+#include <QVector>
 #include <QDebug>
 
 class Server : public QTcpServer {
     Q_OBJECT
 
-    QList<QTcpSocket*> connectedClientSockets;
+    QVector<QTcpSocket*> connectedClients;
 
 public:
     explicit Server(QObject *parent = nullptr);
@@ -23,6 +23,7 @@ protected:
 private slots:
     void read();
     void disconnect();
+    void writeToClient(QTcpSocket* client);
 };
 
 #endif // SERVER_H

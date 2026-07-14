@@ -2,12 +2,10 @@
 #include <QtGlobal>
 #include <QIODevice>
 #include "Client.h"
-
-//class Client : public QObject {
-
-//   Q_OBJECT
-//   QTcpSocket* socket;
-//public:
+#include <QDataStream>
+#include <QtMath>
+#include <QThread>
+#include <QTimer>
 
 Client::Client(QObject *parent) : QObject(parent) {
 
@@ -24,8 +22,6 @@ void Client::connectToServer(const QHostAddress &serverAddress, quint16 port) {
 
     socket->connectToHost(serverAddress, port, QTcpSocket::ReadWrite);
     socket->waitForConnected();
-    socket->write("echo");
-    qDebug() << this << "says: echo" << "\n";
     socket->flush();
 }
 
@@ -36,22 +32,54 @@ void Client::connectedToServer() {
 
 void Client::clientDisconnected() {
 
+    timer->stop();
     qDebug() << "Disconnected from server";
 }
 
 void Client::read() {
 
+    if (timer != nullptr)
+        delete timer;
+
+    timer = new QTimer(this);
+
     QTcpSocket* dataSender = qobject_cast<QTcpSocket*>(sender());
-    QByteArray data = dataSender->readAll();
+    QDataStream rawBytes(dataSender->readAll());
 
-    QString stringData = QString::fromUtf8(data);
+    quint64 bytes;
+    quint64 valFrom = 0;
+    rawBytes >> bytes;
 
-    if (stringData.trimmed() == "ok")
-        qDebug() << "Successful for " << this << "\n";
-    else qDebug() << "Error" << "\n";
+    QTimer::connect(timer, &QTimer::timeout, this, [=]() mutable {
+        QByteArray data = generateArr(bytes, valFrom);
+
+        qDebug() << this << "send: " << data;
+
+        valFrom += bytes;
+
+        socket->write(data);
+    });
+
+    timer->start(5000);
 }
 
-//void write() {
+QByteArray Client::generateArr(quint64 bytes, quint64 valFrom) {
 
-//    socket->write("echo");
-//}
+    QByteArray block(bytes, Qt::Uninitialized);
+
+    QDataStream stream(&block, QIODevice::WriteOnly);
+
+    stream.setFloatingPointPrecision(QDataStream::DoublePrecision);
+    stream.setByteOrder(QDataStream::BigEndian);
+
+    for (int i = valFrom; i < int(bytes) + (int)valFrom; ++i) {
+
+        double progress = static_cast<double>(i) / 1000;
+        double rad = progress * 2.0 * M_PI;
+        double sineVal = qSin(rad);
+
+        stream << sineVal;
+    }
+
+    return block;
+}
