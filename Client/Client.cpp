@@ -6,80 +6,128 @@
 #include <QtMath>
 #include <QThread>
 #include <QTimer>
+#include <QTimerEvent>
+
+typedef int SineValue;
 
 Client::Client(QObject *parent) : QObject(parent) {
 
-    socket = new QTcpSocket(this);
+    m_socket = new QTcpSocket(this);
+    QTimer::connect(&m_timerForSend, &QTimer::timeout, this, &Client::timeForSend);
+    QTcpSocket::connect(m_socket, &QTcpSocket::readyRead, this, &Client::read);
+    QTcpSocket::connect(m_socket, &QTcpSocket::disconnected, this, &Client::clientDisconnected);
+    QTcpSocket::connect(m_socket, &QTcpSocket::connected, this, &Client::connectedToServer);
 
-    QTcpSocket::connect(socket, &QTcpSocket::readyRead, this, &Client::read);
-    QTcpSocket::connect(socket, &QTcpSocket::disconnected, this, &Client::clientDisconnected);
-    QTcpSocket::connect(socket, &QTcpSocket::connected, this, &Client::connectedToServer);
+    m_socket->connectToHost(QHostAddress("127.0.0.1"), m_port, QTcpSocket::ReadWrite);
+
+    if (!m_socket->waitForConnected(1000)) {
+
+        qDebug() << "Failed to connect to server. Reconnecting...";
+
+        if (m_timerIdForReconnect == 0) {
+            m_timerIdForReconnect = startTimer(5000);
+        }
+    }
+
+    m_sinus.reserve(sizeof(SineValue) * 1000);
+
+    SineValue sineValueForQByteArray = 0;
+
+    for (int i = 0; i < 1000; ++i) {
+        sineValueForQByteArray = qSin(i * 2 * M_PI / 1000) * INT16_MAX;
+        m_sinus.append(reinterpret_cast<char*>(&sineValueForQByteArray), sizeof(SineValue));
+    }
 }
 
 Client::~Client() {}
 
-void Client::connectToServer(const QHostAddress &serverAddress, quint16 port) {
-
-    socket->connectToHost(serverAddress, port, QTcpSocket::ReadWrite);
-    socket->waitForConnected();
-    socket->flush();
-}
-
 void Client::connectedToServer() {
+
+    if (m_timerIdForReconnect != 0) {
+        killTimer(m_timerIdForReconnect);
+        m_timerIdForReconnect = 0;
+    }
 
     qDebug() << "Connected to server";
 }
 
 void Client::clientDisconnected() {
 
-    timer->stop();
+    m_timerForSend.stop();
     qDebug() << "Disconnected from server";
+
+    if (m_timerIdForReconnect == 0) {
+        m_timerIdForReconnect = startTimer(5000);
+    }
 }
 
 void Client::read() {
 
-    if (timer != nullptr)
-        delete timer;
+    QDataStream rawBytes(m_socket->readAll());
 
-    timer = new QTimer(this);
+    quint64 tempBytes;
+    rawBytes >> tempBytes;
+    m_countOfBytesForSendToServer = tempBytes;
 
-    QTcpSocket* dataSender = qobject_cast<QTcpSocket*>(sender());
-    QDataStream rawBytes(dataSender->readAll());
-
-    quint64 bytes;
-    quint64 valFrom = 0;
-    rawBytes >> bytes;
-
-    QTimer::connect(timer, &QTimer::timeout, this, [=]() mutable {
-        QByteArray data = generateArr(bytes, valFrom);
-
-        qDebug() << this << "send: " << data;
-
-        valFrom += bytes;
-
-        socket->write(data);
-    });
-
-    timer->start(5000);
+    m_timerForSend.start(5000);
 }
 
-QByteArray Client::generateArr(quint64 bytes, quint64 valFrom) {
+void Client::timeForSend() {
 
-    QByteArray block(bytes, Qt::Uninitialized);
+    QByteArray data = getPartOfSine();
 
-    QDataStream stream(&block, QIODevice::WriteOnly);
+    QByteArray data1;
+    QByteArray data2;
+    QByteArray data3;
 
-    stream.setFloatingPointPrecision(QDataStream::DoublePrecision);
-    stream.setByteOrder(QDataStream::BigEndian);
+    data1.append(data.constData(), data.size() / 3);
+    data2.append(data.constData() + data1.size(), data.size() / 3);
+    data3.append(data.constData() + data1.size() + data2.size(), data.size() - data1.size() - data2.size());
 
-    for (int i = valFrom; i < int(bytes) + (int)valFrom; ++i) {
+    qDebug() << this << "send: " << data1;
+    m_socket->write(data1);
+    m_socket->flush();
 
-        double progress = static_cast<double>(i) / 1000;
-        double rad = progress * 2.0 * M_PI;
-        double sineVal = qSin(rad);
+    qDebug() << this << "send: " << data2;
+    m_socket->write(data2);
+    m_socket->flush();
 
-        stream << sineVal;
+    qDebug() << this << "send: " << data3;
+    m_socket->write(data3);
+    m_socket->flush();
+}
+
+void Client::timerEvent(QTimerEvent *event) {
+
+    if (event->timerId() == m_timerIdForReconnect) {
+        qDebug() << "Reconnecting...";
+        m_socket->connectToHost(QHostAddress("127.0.0.1"), m_port, QTcpSocket::ReadWrite);
+    } else {
+        QObject::timerEvent(event);
     }
+}
+
+QByteArray Client::getPartOfSine() {
+
+    QByteArray block;
+    block.reserve(m_countOfBytesForSendToServer * sizeof(SineValue));
+
+    int count = m_sinus.size() / sizeof(SineValue);
+
+    if (m_countOfBytesForSendToServer + m_lastSinePositionInSinusArray < count)
+        block.append(m_sinus.constData() + m_lastSinePositionInSinusArray * sizeof(SineValue),
+                     m_countOfBytesForSendToServer * sizeof(SineValue));
+    else {
+        int partCountOfBytesForSendToServer = m_countOfBytesForSendToServer + m_lastSinePositionInSinusArray - count;
+        block.append(m_sinus.constData() + m_lastSinePositionInSinusArray * sizeof(SineValue),
+                     m_countOfBytesForSendToServer * sizeof(SineValue) - partCountOfBytesForSendToServer * sizeof(SineValue));
+        block.append(m_sinus.constData(), partCountOfBytesForSendToServer * sizeof(SineValue));
+    }
+
+    m_lastSinePositionInSinusArray += m_countOfBytesForSendToServer;
+
+    if (m_lastSinePositionInSinusArray >= count)
+        m_lastSinePositionInSinusArray -= count;
 
     return block;
 }

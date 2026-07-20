@@ -4,26 +4,37 @@
 
 #include <QTcpServer>
 #include <QTcpSocket>
-#include <QVector>
+#include <QMap>
 #include <QDebug>
+
+struct ClientData {
+    quint32 index;
+    QByteArray m_buffer;
+
+    ClientData(quint32 _index) : index(_index) {}
+};
 
 class Server : public QTcpServer {
     Q_OBJECT
 
-    QVector<QTcpSocket*> connectedClients;
-
 public:
-    explicit Server(QObject *parent = nullptr);
-
-    bool startServer(quint16 port);
+    explicit Server(quint16 port, QObject *parent = nullptr);
 
 protected:
     void incomingConnection(qintptr socketDescriptor) override;
 
 private slots:
-    void read();
-    void disconnect();
-    void writeToClient(QTcpSocket* client);
+    void onReadyRead();
+    void onDisconnected();
+    void onErrorOccurred();
+    void onStateChanged();
+
+private:
+    void sendRandBytesToClient(QTcpSocket* client);
+
+private:
+    QMap<QTcpSocket*, ClientData> connectedClients;
+    //QByteArray m_buffer;
 };
 
 #endif // SERVER_H
