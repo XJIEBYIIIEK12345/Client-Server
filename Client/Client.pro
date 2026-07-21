@@ -18,3 +18,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     Client.h
+
+INCLUDEPATH += $$PWD/../general

@@ -4,6 +4,7 @@
 #include <QList>
 #include <iostream>
 #include <QtEndian>
+#include "PackageType.h"
 
 typedef int SineValue;
 
@@ -101,8 +102,14 @@ void Server::onStateChanged() {
 void Server::sendRandBytesToClient(QTcpSocket* client){
 
     quint64 bytes = QRandomGenerator::global()->bounded(0,1000);
+    QString valueType = "int";
 
-    QDataStream out(client);
+    PackageType packageType(valueType, bytes);
 
-    out << bytes;
+    QByteArray block;
+    QDataStream out(&block, QIODevice::WriteOnly);
+
+    out << packageType;
+
+    client->write(block);
 }

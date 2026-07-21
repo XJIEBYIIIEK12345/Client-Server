@@ -7,6 +7,7 @@
 #include <QThread>
 #include <QTimer>
 #include <QTimerEvent>
+#include "PackageType.h"
 
 typedef int SineValue;
 
@@ -65,11 +66,13 @@ void Client::clientDisconnected() {
 
 void Client::read() {
 
-    QDataStream rawBytes(m_socket->readAll());
+    QDataStream data(m_socket);
 
-    quint64 tempBytes;
-    rawBytes >> tempBytes;
-    m_countOfBytesForSendToServer = tempBytes;
+    PackageType packageType;
+
+    data >> packageType;
+
+    m_countOfBytesForSendToServer = packageType.bytes;
 
     m_timerForSend.start(5000);
 }
