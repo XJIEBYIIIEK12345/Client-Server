@@ -10,7 +10,7 @@ class Client : public QObject {
     Q_OBJECT
 
 public:
-    explicit Client(QObject *parent = nullptr);
+    explicit Client(QString address, quint16 port, QObject *parent = nullptr);
     ~Client();
 
 private slots:
@@ -27,6 +27,7 @@ private:
 
 private:
     quint16 m_port = 6789;
+    QString m_address = "127.0.0.1";
     QTcpSocket* m_socket = nullptr;
     QTimer m_timerForSend;
     int m_timerIdForReconnect = 0;

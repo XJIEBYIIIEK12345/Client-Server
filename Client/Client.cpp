@@ -10,15 +10,17 @@
 
 typedef int SineValue;
 
-Client::Client(QObject *parent) : QObject(parent) {
+Client::Client(QString address, quint16 port, QObject *parent) : QObject(parent) {
 
+    m_address = address;
+    m_port = port;
     m_socket = new QTcpSocket(this);
     QTimer::connect(&m_timerForSend, &QTimer::timeout, this, &Client::timeForSend);
     QTcpSocket::connect(m_socket, &QTcpSocket::readyRead, this, &Client::read);
     QTcpSocket::connect(m_socket, &QTcpSocket::disconnected, this, &Client::clientDisconnected);
     QTcpSocket::connect(m_socket, &QTcpSocket::connected, this, &Client::connectedToServer);
 
-    m_socket->connectToHost(QHostAddress("127.0.0.1"), m_port, QTcpSocket::ReadWrite);
+    m_socket->connectToHost(QHostAddress(m_address), m_port, QTcpSocket::ReadWrite);
 
     if (!m_socket->waitForConnected(1000)) {
 
@@ -101,7 +103,7 @@ void Client::timerEvent(QTimerEvent *event) {
 
     if (event->timerId() == m_timerIdForReconnect) {
         qDebug() << "Reconnecting...";
-        m_socket->connectToHost(QHostAddress("127.0.0.1"), m_port, QTcpSocket::ReadWrite);
+        m_socket->connectToHost(QHostAddress(m_address), m_port, QTcpSocket::ReadWrite);
     } else {
         QObject::timerEvent(event);
     }

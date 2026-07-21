@@ -11,6 +11,7 @@ struct ClientData {
     quint32 index;
     QByteArray m_buffer;
 
+    ClientData() : index(0) {}
     ClientData(quint32 _index) : index(_index) {}
 };
 
@@ -34,7 +35,6 @@ private:
 
 private:
     QMap<QTcpSocket*, ClientData> connectedClients;
-    //QByteArray m_buffer;
 };
 
 #endif // SERVER_H
