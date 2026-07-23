@@ -4,7 +4,7 @@
 #include <QDataStream>
 #include <QTimer>
 #include <QTimerEvent>
-#include "PackageType.h"
+#include "PackageTypeForClient.h"
 #include "SineGenerator.h"
 #include "SineGeneratorForInt16.h"
 #include "SineGeneratorForInt32.h"
@@ -47,8 +47,6 @@ void Client::connectedToServer() {
     message = "Hello";
 
     m_socket->write(message);
-
-    m_lastSinePositionInSinusArray = 0;
 }
 
 void Client::clientDisconnected() {
@@ -68,21 +66,19 @@ void Client::read() {
     PackageTypeToClient package;
 
     data >> package;
-
-    m_countOfBytesForSendToServer = package.bytes;
     QString typeForPackageToSend = package.valueType;
 
     if (typeForPackageToSend == "qint16") {
-        m_generator = new SineGeneratorForInt16();
+        m_generator = new SineGeneratorForInt16(package.bytes);
     }
     else if (typeForPackageToSend == "qint32") {
-        m_generator = new SineGeneratorForInt32();
+        m_generator = new SineGeneratorForInt32(package.bytes);
     }
     else if (typeForPackageToSend == "qint64") {
-        m_generator = new SineGeneratorForInt64();
+        m_generator = new SineGeneratorForInt64(package.bytes);
     }
     else {
-        m_generator = new SineGeneratorForInt32();
+        m_generator = new SineGeneratorForInt32(package.bytes);
     }
 
     m_timerForSend.start(5000);
@@ -90,8 +86,7 @@ void Client::read() {
 
 void Client::timeForSend() {
 
-    QByteArray data;
-    data = getPartOfSine();
+    QByteArray data = m_generator->generateSineForType();
     qDebug() << this << "send: " << data;
 
     m_socket->write(data);
@@ -106,16 +101,4 @@ void Client::timerEvent(QTimerEvent *event) {
     } else {
         QObject::timerEvent(event);
     }
-}
-
-QByteArray Client::getPartOfSine() {
-
-    QByteArray block = m_generator->generateSineForType(m_countOfBytesForSendToServer, m_lastSinePositionInSinusArray);
-
-    m_lastSinePositionInSinusArray += m_countOfBytesForSendToServer;
-
-    if (m_lastSinePositionInSinusArray >= 1000)
-        m_lastSinePositionInSinusArray -= 1000;
-
-    return block;
 }

@@ -21,6 +21,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     Client.h \
+    PackageTypeForClient.h \
     SineGenerator.h \
     SineGeneratorForInt16.h \
     SineGeneratorForInt32.h \

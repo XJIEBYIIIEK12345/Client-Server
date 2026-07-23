@@ -2,7 +2,7 @@
 #include <QRandomGenerator64>
 #include <QDataStream>
 #include <iostream>
-#include "PackageType.h"
+#include "PackageTypeForServer.h"
 #include "PackageParser.h"
 #include "PackageParserForInt16.h"
 #include "PackageParserForInt32.h"

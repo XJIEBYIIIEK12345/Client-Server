@@ -4,7 +4,6 @@
 #include <QTcpSocket>
 #include <QHostAddress>
 #include <QTimer>
-#include "PackageType.h"
 #include "SineGenerator.h"
 
 class Client : public QObject {
@@ -24,16 +23,11 @@ protected:
     void timerEvent(QTimerEvent *event) override;
 
 private:
-    QByteArray getPartOfSine();
-
-private:
     quint16 m_port = 6789;
     QString m_address = "127.0.0.1";
     QTcpSocket* m_socket = nullptr;
     QTimer m_timerForSend;
     int m_timerIdForReconnect = 0;
-    int m_countOfBytesForSendToServer = 0;
-    int m_lastSinePositionInSinusArray = 0;
     SineGenerator* m_generator = nullptr;
 };
 

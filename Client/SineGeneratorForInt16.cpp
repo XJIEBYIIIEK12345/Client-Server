@@ -1,7 +1,10 @@
 #include "SineGeneratorForInt16.h"
 #include <QtMath>
 
-SineGeneratorForInt16::SineGeneratorForInt16() {
+SineGeneratorForInt16::SineGeneratorForInt16(qint32 bytes) {
+
+    m_countOfBytes = bytes;
+    m_lastSinePositionInSinusArray = 0;
 
     qint16 size = sizeof(qint16);
 
@@ -17,23 +20,28 @@ SineGeneratorForInt16::SineGeneratorForInt16() {
 
 SineGeneratorForInt16::~SineGeneratorForInt16() {}
 
-QByteArray SineGeneratorForInt16::generateSineForType(int countOfBytesForSendToServer, int lastSinePositionInSinusArray) {
+QByteArray SineGeneratorForInt16::generateSineForType() {
 
     qint16 size = sizeof(qint16);
     QByteArray block;
-    block.reserve(countOfBytesForSendToServer * size);
+    block.reserve(m_countOfBytes * size);
 
     int count = m_block.size() / size;
 
-    if (countOfBytesForSendToServer + lastSinePositionInSinusArray < count)
-        block.append(m_block.constData() + lastSinePositionInSinusArray * size,
-                     countOfBytesForSendToServer * size);
+    if (m_countOfBytes + m_lastSinePositionInSinusArray < count)
+        block.append(m_block.constData() + m_lastSinePositionInSinusArray * size,
+                     m_countOfBytes * size);
     else {
-        int partCountOfBytesForSendToServer = countOfBytesForSendToServer + lastSinePositionInSinusArray - count;
-        block.append(m_block.constData() + lastSinePositionInSinusArray * size,
-                     countOfBytesForSendToServer * size - partCountOfBytesForSendToServer * size);
+        int partCountOfBytesForSendToServer = m_countOfBytes + m_lastSinePositionInSinusArray - count;
+        block.append(m_block.constData() + m_lastSinePositionInSinusArray * size,
+                     m_countOfBytes * size - partCountOfBytesForSendToServer * size);
         block.append(m_block.constData(), partCountOfBytesForSendToServer * size);
     }
+
+    m_lastSinePositionInSinusArray += m_countOfBytes;
+
+    if (m_lastSinePositionInSinusArray >= 1000)
+        m_lastSinePositionInSinusArray -= 1000;
 
     return block;
 }

@@ -24,6 +24,7 @@ HEADERS += \
     PackageParserForInt16.h \
     PackageParserForInt32.h \
     PackageParserForInt64.h \
+    PackageTypeForServer.h \
     Server.h
 
 INCLUDEPATH += $$PWD/../general
