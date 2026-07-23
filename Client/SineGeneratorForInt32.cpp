@@ -6,14 +6,14 @@ SineGeneratorForInt32::SineGeneratorForInt32(qint32 bytes) {
     m_countOfBytes = bytes;
     m_lastSinePositionInSinusArray = 0;
 
-    qint16 size = sizeof(qint32);
+    const qint16 size = sizeof(qint32);
 
     m_block.reserve(size * 1000);
 
-    qint32 sineValueForQByteArray = 0;
-
     for (int i = 0; i < 1000; ++i) {
-        sineValueForQByteArray = qSin(i * 2 * M_PI / 1000) * INT32_MAX;
+        double tempValue = qSin(i * 2 * M_PI / 1000) * double(INT32_MAX);
+        qint32 sineValueForQByteArray = tempValue > double(INT32_MAX) ? INT32_MAX :
+                                            tempValue < double(INT32_MIN) ? INT32_MIN : qint32(tempValue);
         m_block.append(reinterpret_cast<char*>(&sineValueForQByteArray), size);
     }
 }

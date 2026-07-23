@@ -28,3 +28,5 @@ HEADERS += \
     SineGeneratorForInt64.h
 
 INCLUDEPATH += $$PWD/../general
+
+QMAKE_CFLAGS += -Werror -Wall

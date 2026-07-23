@@ -28,3 +28,5 @@ HEADERS += \
     Server.h
 
 INCLUDEPATH += $$PWD/../general
+
+QMAKE_CFLAGS += -Werror -Wall
