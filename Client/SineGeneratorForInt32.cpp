@@ -13,7 +13,7 @@ SineGeneratorForInt32::SineGeneratorForInt32(qint32 bytes) {
     qint32 sineValueForQByteArray = 0;
 
     for (int i = 0; i < 1000; ++i) {
-        sineValueForQByteArray = qSin(i * 2 * M_PI / 1000) * INT16_MAX;
+        sineValueForQByteArray = qSin(i * 2 * M_PI / 1000) * INT32_MAX;
         m_block.append(reinterpret_cast<char*>(&sineValueForQByteArray), size);
     }
 }
