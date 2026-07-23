@@ -1,10 +1,11 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 #pragma once
-#include <QObject>
 #include <QTcpSocket>
 #include <QHostAddress>
 #include <QTimer>
+#include "PackageType.h"
+#include "SineGenerator.h"
 
 class Client : public QObject {
     Q_OBJECT
@@ -33,7 +34,7 @@ private:
     int m_timerIdForReconnect = 0;
     int m_countOfBytesForSendToServer = 0;
     int m_lastSinePositionInSinusArray = 0;
-    QByteArray m_sinus;
+    SineGenerator* m_generator = nullptr;
 };
 
 #endif // CLIENT_H

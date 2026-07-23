@@ -1,12 +1,12 @@
 #include "Server.h"
 #include <QRandomGenerator64>
 #include <QDataStream>
-#include <QList>
 #include <iostream>
-#include <QtEndian>
 #include "PackageType.h"
-
-typedef int SineValue;
+#include "PackageParser.h"
+#include "PackageParserForInt16.h"
+#include "PackageParserForInt32.h"
+#include "PackageParserForInt64.h"
 
 Server::Server(quint16 port, QObject *parent) : QTcpServer(parent) {
 
@@ -30,9 +30,7 @@ void Server::incomingConnection(qintptr socketDescriptor) {
         delete socket;
     }
 
-    qDebug() << "Client" << connectedClients[socket].index << " was connected";
-
-    this->sendRandBytesToClient(socket);
+    qDebug() << "Client" << connectedClients[socket].m_id << " was connected";
 }
 
 void Server::onReadyRead() {
@@ -40,21 +38,45 @@ void Server::onReadyRead() {
     QTcpSocket* dataSender = qobject_cast<QTcpSocket*>(sender());
     if (!dataSender) return;
 
-    QByteArray& buffer = connectedClients[dataSender].m_buffer;
+    QByteArray message = dataSender->readAll();
 
-    QByteArray data = dataSender->readAll();
+    if (message == "Hello") {
 
-    buffer.append(data);
-    int count = buffer.size() / sizeof(SineValue);
+        QString valueType;
+        switch (QRandomGenerator::global()->bounded(1, 3)) {
+        case 1:
+            connectedClients[dataSender].m_parser = new PackageParserForInt16();
+            valueType = "qint16";
+            break;
+        case 2:
+            connectedClients[dataSender].m_parser = new PackageParserForInt32();
+            valueType = "qint32";
+            break;
+        case 3:
+            connectedClients[dataSender].m_parser = new PackageParserForInt64();
+            valueType = "qint64";
+            break;
+        default:
+            connectedClients[dataSender].m_parser = new PackageParserForInt32();
+            valueType = "qint32";
+            break;
+        }
 
-    SineValue* sinus = reinterpret_cast<SineValue*>(buffer.data());
+        quint64 bytes = QRandomGenerator::global()->bounded(0,1000);
 
-    std::cout << "Server received: ";
-    for (int i = 0; i < count; ++i)
-        std::cout << sinus[i] << ", ";
-    std::cout << "from Client" << connectedClients[dataSender].index << "\n" << "\n";
+        PackageTypeToClient package(valueType, bytes);
 
-    buffer.remove(0, count * sizeof(SineValue));
+        QByteArray block;
+        QDataStream out(&block, QIODevice::WriteOnly);
+
+        out << package;
+
+        dataSender->write(block);
+    }
+    else {
+        connectedClients[dataSender].m_parser->parsePackage(message);
+        std::cout << "from Client" << connectedClients[dataSender].m_id << "\n" << "\n";
+    }
 }
 
 void Server::onDisconnected() {
@@ -80,36 +102,22 @@ void Server::onStateChanged() {
 
     switch (socket->state()) {
     case QAbstractSocket::HostLookupState:
-        qDebug() << "Client" << connectedClients[socket].index << "is looking for host..." << "\n";
+        qDebug() << "Client" << connectedClients[socket].m_id << "is looking for host..." << "\n";
         break;
     case QAbstractSocket::ConnectingState:
-        qDebug() << "Client" << connectedClients[socket].index << "is connecting to server..." << "\n";
+        qDebug() << "Client" << connectedClients[socket].m_id << "is connecting to server..." << "\n";
         break;
     case QAbstractSocket::ConnectedState:
-        qDebug() << "Client" << connectedClients[socket].index << "is connected" << "\n";
+        qDebug() << "Client" << connectedClients[socket].m_id << "is connected" << "\n";
         break;
     case QAbstractSocket::ClosingState:
-        qDebug() << "Client" << connectedClients[socket].index << "is closing..." << "\n";
+        qDebug() << "Client" << connectedClients[socket].m_id << "is closing..." << "\n";
         break;
     case QAbstractSocket::UnconnectedState:
-        qDebug() << "Client" << connectedClients[socket].index << "is unconnected" << "\n";
+        qDebug() << "Client" << connectedClients[socket].m_id << "is unconnected" << "\n";
         break;
     default:
         break;
     }
 }
 
-void Server::sendRandBytesToClient(QTcpSocket* client){
-
-    quint64 bytes = QRandomGenerator::global()->bounded(0,1000);
-    QString valueType = "int";
-
-    PackageType packageType(valueType, bytes);
-
-    QByteArray block;
-    QDataStream out(&block, QIODevice::WriteOnly);
-
-    out << packageType;
-
-    client->write(block);
-}

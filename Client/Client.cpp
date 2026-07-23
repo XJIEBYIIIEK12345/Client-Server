@@ -1,15 +1,14 @@
 #include <QTcpSocket>
-#include <QtGlobal>
 #include <QIODevice>
 #include "Client.h"
 #include <QDataStream>
-#include <QtMath>
-#include <QThread>
 #include <QTimer>
 #include <QTimerEvent>
 #include "PackageType.h"
-
-typedef int SineValue;
+#include "SineGenerator.h"
+#include "SineGeneratorForInt16.h"
+#include "SineGeneratorForInt32.h"
+#include "SineGeneratorForInt64.h"
 
 Client::Client(QString address, quint16 port, QObject *parent) : QObject(parent) {
 
@@ -31,15 +30,6 @@ Client::Client(QString address, quint16 port, QObject *parent) : QObject(parent)
             m_timerIdForReconnect = startTimer(5000);
         }
     }
-
-    m_sinus.reserve(sizeof(SineValue) * 1000);
-
-    SineValue sineValueForQByteArray = 0;
-
-    for (int i = 0; i < 1000; ++i) {
-        sineValueForQByteArray = qSin(i * 2 * M_PI / 1000) * INT16_MAX;
-        m_sinus.append(reinterpret_cast<char*>(&sineValueForQByteArray), sizeof(SineValue));
-    }
 }
 
 Client::~Client() {}
@@ -52,6 +42,13 @@ void Client::connectedToServer() {
     }
 
     qDebug() << "Connected to server";
+
+    QByteArray message;
+    message = "Hello";
+
+    m_socket->write(message);
+
+    m_lastSinePositionInSinusArray = 0;
 }
 
 void Client::clientDisconnected() {
@@ -68,37 +65,36 @@ void Client::read() {
 
     QDataStream data(m_socket);
 
-    PackageType packageType;
+    PackageTypeToClient package;
 
-    data >> packageType;
+    data >> package;
 
-    m_countOfBytesForSendToServer = packageType.bytes;
+    m_countOfBytesForSendToServer = package.bytes;
+    QString typeForPackageToSend = package.valueType;
+
+    if (typeForPackageToSend == "qint16") {
+        m_generator = new SineGeneratorForInt16();
+    }
+    else if (typeForPackageToSend == "qint32") {
+        m_generator = new SineGeneratorForInt32();
+    }
+    else if (typeForPackageToSend == "qint64") {
+        m_generator = new SineGeneratorForInt64();
+    }
+    else {
+        m_generator = new SineGeneratorForInt32();
+    }
 
     m_timerForSend.start(5000);
 }
 
 void Client::timeForSend() {
 
-    QByteArray data = getPartOfSine();
+    QByteArray data;
+    data = getPartOfSine();
+    qDebug() << this << "send: " << data;
 
-    QByteArray data1;
-    QByteArray data2;
-    QByteArray data3;
-
-    data1.append(data.constData(), data.size() / 3);
-    data2.append(data.constData() + data1.size(), data.size() / 3);
-    data3.append(data.constData() + data1.size() + data2.size(), data.size() - data1.size() - data2.size());
-
-    qDebug() << this << "send: " << data1;
-    m_socket->write(data1);
-    m_socket->flush();
-
-    qDebug() << this << "send: " << data2;
-    m_socket->write(data2);
-    m_socket->flush();
-
-    qDebug() << this << "send: " << data3;
-    m_socket->write(data3);
+    m_socket->write(data);
     m_socket->flush();
 }
 
@@ -114,25 +110,12 @@ void Client::timerEvent(QTimerEvent *event) {
 
 QByteArray Client::getPartOfSine() {
 
-    QByteArray block;
-    block.reserve(m_countOfBytesForSendToServer * sizeof(SineValue));
-
-    int count = m_sinus.size() / sizeof(SineValue);
-
-    if (m_countOfBytesForSendToServer + m_lastSinePositionInSinusArray < count)
-        block.append(m_sinus.constData() + m_lastSinePositionInSinusArray * sizeof(SineValue),
-                     m_countOfBytesForSendToServer * sizeof(SineValue));
-    else {
-        int partCountOfBytesForSendToServer = m_countOfBytesForSendToServer + m_lastSinePositionInSinusArray - count;
-        block.append(m_sinus.constData() + m_lastSinePositionInSinusArray * sizeof(SineValue),
-                     m_countOfBytesForSendToServer * sizeof(SineValue) - partCountOfBytesForSendToServer * sizeof(SineValue));
-        block.append(m_sinus.constData(), partCountOfBytesForSendToServer * sizeof(SineValue));
-    }
+    QByteArray block = m_generator->generateSineForType(m_countOfBytesForSendToServer, m_lastSinePositionInSinusArray);
 
     m_lastSinePositionInSinusArray += m_countOfBytesForSendToServer;
 
-    if (m_lastSinePositionInSinusArray >= count)
-        m_lastSinePositionInSinusArray -= count;
+    if (m_lastSinePositionInSinusArray >= 1000)
+        m_lastSinePositionInSinusArray -= 1000;
 
     return block;
 }

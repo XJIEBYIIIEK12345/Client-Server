@@ -5,14 +5,14 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QMap>
-#include <QDebug>
+#include "PackageParser.h"
 
 struct ClientData {
-    quint32 index;
-    QByteArray m_buffer;
+    quint32 m_id;
+    PackageParser* m_parser = nullptr;
 
-    ClientData() : index(0) {}
-    ClientData(quint32 _index) : index(_index) {}
+    ClientData() : m_id(0) {}
+    ClientData(quint32 _id) : m_id(_id) {}
 };
 
 class Server : public QTcpServer {
@@ -29,9 +29,6 @@ private slots:
     void onDisconnected();
     void onErrorOccurred();
     void onStateChanged();
-
-private:
-    void sendRandBytesToClient(QTcpSocket* client);
 
 private:
     QMap<QTcpSocket*, ClientData> connectedClients;

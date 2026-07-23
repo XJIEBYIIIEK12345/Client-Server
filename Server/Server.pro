@@ -8,6 +8,9 @@ CONFIG += c++17 cmdline
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+        PackageParserForInt16.cpp \
+        PackageParserForInt32.cpp \
+        PackageParserForInt64.cpp \
         Server.cpp \
         main.cpp
 
@@ -17,6 +20,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
+    PackageParser.h \
+    PackageParserForInt16.h \
+    PackageParserForInt32.h \
+    PackageParserForInt64.h \
     Server.h
 
 INCLUDEPATH += $$PWD/../general

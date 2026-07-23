@@ -9,6 +9,9 @@ CONFIG += c++17 cmdline
 
 SOURCES += \
         Client.cpp \
+        SineGeneratorForInt16.cpp \
+        SineGeneratorForInt32.cpp \
+        SineGeneratorForInt64.cpp \
         main.cpp
 
 # Default rules for deployment.
@@ -17,6 +20,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    Client.h
+    Client.h \
+    SineGenerator.h \
+    SineGeneratorForInt16.h \
+    SineGeneratorForInt32.h \
+    SineGeneratorForInt64.h
 
 INCLUDEPATH += $$PWD/../general

@@ -2,21 +2,40 @@
 #define PACKAGETYPE_H
 #include <QString>
 #include <QDataStream>
-struct PackageType {
+
+struct PackageTypeToClient {
     QString valueType;
     quint64 bytes;
 
-    PackageType() : valueType("int"), bytes(0) {}
-    PackageType(QString _valueType, quint64 _bytes) : valueType(_valueType), bytes(_bytes) {}
+    PackageTypeToClient() : valueType("int"), bytes(0) {}
+    PackageTypeToClient(QString _valueType, quint64 _bytes) : valueType(_valueType), bytes(_bytes) {}
 };
 
-inline QDataStream &operator<<(QDataStream &out, const PackageType& packageType) {
-    out << packageType.valueType << packageType.bytes;
+inline QDataStream &operator<<(QDataStream &out, const PackageTypeToClient& packageTypeToClient) {
+    out << packageTypeToClient.valueType << packageTypeToClient.bytes;
     return out;
 }
 
-inline QDataStream &operator>>(QDataStream &in, PackageType& packageType) {
-    in >> packageType.valueType >> packageType.bytes;
+inline QDataStream &operator>>(QDataStream &in, PackageTypeToClient& packageTypeToClient) {
+    in >> packageTypeToClient.valueType >> packageTypeToClient.bytes;
     return in;
 }
+
+// struct PackageTypeToServer {
+//     QByteArray block;
+//     QString typeSize;
+
+//     PackageTypeToServer() : typeSize("") {}
+//     PackageTypeToServer(QByteArray _block, QString _typeSize) : block(_block), typeSize(_typeSize) {}
+// };
+
+// inline QDataStream &operator<<(QDataStream &out, const PackageTypeToServer& packageTypeToServer) {
+//     out << packageTypeToServer.block << packageTypeToServer.typeSize;
+//     return out;
+// }
+
+// inline QDataStream &operator>>(QDataStream &in, PackageTypeToServer& packageTypeToServer) {
+//     in >> packageTypeToServer.block >> packageTypeToServer.typeSize;
+//     return in;
+// }
 #endif // PACKAGETYPE_H
