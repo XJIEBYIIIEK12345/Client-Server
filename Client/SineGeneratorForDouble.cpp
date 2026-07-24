@@ -1,28 +1,26 @@
-#include "SineGeneratorForInt16.h"
+#include "SineGeneratorForDouble.h"
 #include <QtMath>
 
-SineGeneratorForInt16::SineGeneratorForInt16(qint32 bytes) {
+SineGeneratorForDouble::SineGeneratorForDouble(qint32 bytes) {
 
     m_countOfBytes = bytes;
     m_lastSinePositionInSinusArray = 0;
 
-    const qint16 size = sizeof(qint16);
+    const qint16 size = sizeof(double);
 
     m_block.reserve(size * 1000);
 
     for (int i = 0; i < 1000; ++i) {
-        double tempValue = qSin(i * 2 * M_PI / 1000) * double(std::numeric_limits<qint16>::max());
-        qint16 sineValueForQByteArray = tempValue > double(std::numeric_limits<qint16>::max()) ? std::numeric_limits<qint16>::max() :
-                                            tempValue < double(std::numeric_limits<qint16>::min()) ? std::numeric_limits<qint16>::min() : qint16(tempValue);
+        double sineValueForQByteArray = qSin(i * 2 * M_PI / 1000);
         m_block.append(reinterpret_cast<char*>(&sineValueForQByteArray), size);
     }
 }
 
-SineGeneratorForInt16::~SineGeneratorForInt16() {}
+SineGeneratorForDouble::~SineGeneratorForDouble() {}
 
-QByteArray SineGeneratorForInt16::generateSineForType() {
+QByteArray SineGeneratorForDouble::generateSineForType() {
 
-    qint16 size = sizeof(qint16);
+    qint16 size = sizeof(double);
     QByteArray block;
     block.reserve(m_countOfBytes * size);
 
@@ -45,4 +43,3 @@ QByteArray SineGeneratorForInt16::generateSineForType() {
 
     return block;
 }
-

@@ -11,9 +11,9 @@ SineGeneratorForInt32::SineGeneratorForInt32(qint32 bytes) {
     m_block.reserve(size * 1000);
 
     for (int i = 0; i < 1000; ++i) {
-        double tempValue = qSin(i * 2 * M_PI / 1000) * double(INT32_MAX);
-        qint32 sineValueForQByteArray = tempValue > double(INT32_MAX) ? INT32_MAX :
-                                            tempValue < double(INT32_MIN) ? INT32_MIN : qint32(tempValue);
+        double tempValue = qSin(i * 2 * M_PI / 1000) * double(std::numeric_limits<qint32>::max());
+        qint32 sineValueForQByteArray = tempValue > double(std::numeric_limits<qint32>::max()) ? std::numeric_limits<qint32>::max() :
+                                            tempValue < double(std::numeric_limits<qint32>::min()) ? std::numeric_limits<qint32>::min() : qint32(tempValue);
         m_block.append(reinterpret_cast<char*>(&sineValueForQByteArray), size);
     }
 }

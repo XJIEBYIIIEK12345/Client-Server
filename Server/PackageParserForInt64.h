@@ -9,8 +9,6 @@ public:
     ~PackageParserForInt64();
 
     void parsePackage(QByteArray data) override;
-
-    qint64* m_parsedSinus;
 };
 
 #endif // PACKAGEPARSERFORINT64_H

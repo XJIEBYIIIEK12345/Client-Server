@@ -9,6 +9,8 @@ CONFIG += c++17 cmdline
 
 SOURCES += \
         Client.cpp \
+        SineGeneratorForDouble.cpp \
+        SineGeneratorForFloat.cpp \
         SineGeneratorForInt16.cpp \
         SineGeneratorForInt32.cpp \
         SineGeneratorForInt64.cpp \
@@ -23,6 +25,8 @@ HEADERS += \
     Client.h \
     PackageTypeForClient.h \
     SineGenerator.h \
+    SineGeneratorForDouble.h \
+    SineGeneratorForFloat.h \
     SineGeneratorForInt16.h \
     SineGeneratorForInt32.h \
     SineGeneratorForInt64.h

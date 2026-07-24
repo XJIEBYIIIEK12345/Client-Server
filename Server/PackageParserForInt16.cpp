@@ -11,11 +11,10 @@ void PackageParserForInt16::parsePackage(QByteArray data) {
     qint16* sinus = reinterpret_cast<qint16*>(m_buffer.data());
 
     qint32 count = m_buffer.size() / sizeof(qint16);
-    m_parsedSinus = sinus;
 
     QString str;
     for (int i = 0; i < count; ++i) {
-        str += QString::number(m_parsedSinus[i]) + ", ";
+        str += QString::number(float(sinus[i]) / float(std::numeric_limits<qint32>::max())) + ", ";
     }
 
     qDebug() << "Server received:" << str;

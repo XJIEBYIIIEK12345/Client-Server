@@ -9,6 +9,8 @@
 #include "SineGeneratorForInt16.h"
 #include "SineGeneratorForInt32.h"
 #include "SineGeneratorForInt64.h"
+#include "SineGeneratorForFloat.h"
+#include "SineGeneratorForDouble.h"
 
 Client::Client(QString address, quint16 port, QObject *parent) : QObject(parent) {
 
@@ -76,6 +78,12 @@ void Client::read() {
     }
     else if (typeForPackageToSend == "qint64") {
         m_generator = new SineGeneratorForInt64(package.bytes);
+    }
+    else if (typeForPackageToSend == "float") {
+        m_generator = new SineGeneratorForFloat(package.bytes);
+    }
+    else if (typeForPackageToSend == "double") {
+        m_generator = new SineGeneratorForDouble(package.bytes);
     }
     else {
         m_generator = new SineGeneratorForInt32(package.bytes);

@@ -7,6 +7,8 @@
 #include "PackageParserForInt16.h"
 #include "PackageParserForInt32.h"
 #include "PackageParserForInt64.h"
+#include "PackageParserForFloat.h"
+#include "PackageParserForDouble.h"
 
 Server::Server(quint16 port, QObject *parent) : QTcpServer(parent) {
 
@@ -43,7 +45,7 @@ void Server::onReadyRead() {
     if (message == "Hello") {
 
         QString valueType;
-        switch (QRandomGenerator::global()->bounded(1, 3)) {
+        switch (QRandomGenerator::global()->bounded(1, 5)) {
         case 1:
             connectedClients[dataSender].m_parser = new PackageParserForInt16();
             valueType = "qint16";
@@ -55,6 +57,14 @@ void Server::onReadyRead() {
         case 3:
             connectedClients[dataSender].m_parser = new PackageParserForInt64();
             valueType = "qint64";
+            break;
+        case 4:
+            connectedClients[dataSender].m_parser = new PackageParserForFloat();
+            valueType = "float";
+            break;
+        case 5:
+            connectedClients[dataSender].m_parser = new PackageParserForDouble();
+            valueType = "double";
             break;
         default:
             connectedClients[dataSender].m_parser = new PackageParserForInt32();
