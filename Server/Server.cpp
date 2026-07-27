@@ -71,7 +71,6 @@ void Server::parseMessageFromClient() {
     }
     else {
         m_connectedClients[dataSender].m_parser->parseAndPrintPackage(message, m_connectedClients[dataSender].m_id);
-        std::cout << "from Client" << m_connectedClients[dataSender].m_id << "\n" << "\n";
     }
 }
 
