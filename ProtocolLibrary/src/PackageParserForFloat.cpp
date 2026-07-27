@@ -5,7 +5,7 @@ PackageParserForFloat::PackageParserForFloat() {}
 
 PackageParserForFloat::~PackageParserForFloat() {}
 
-void PackageParserForFloat::parsePackage(QByteArray data) {
+void PackageParserForFloat::parseAndPrintPackage(QByteArray data, qint32 clientId) {
 
     m_buffer.append(data);
     float* sinus = reinterpret_cast<float*>(m_buffer.data());
@@ -17,7 +17,7 @@ void PackageParserForFloat::parsePackage(QByteArray data) {
         str += QString::number(sinus[i], 'f', 6) + ", ";
     }
 
-    qDebug() << "Server received:" << str;
+    qDebug() << "Server received:" << str << "from Client" << clientId << "\n" << "\n";
 
     m_buffer.remove(0, count * sizeof(float));
 }

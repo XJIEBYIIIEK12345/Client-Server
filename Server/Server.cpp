@@ -5,6 +5,17 @@
 #include "PackageTypeForServer.h"
 #include "PackageParser.h"
 
+ClientData::ClientData() : m_id(0) {}
+
+ClientData::ClientData(quint32 _id) : m_id(_id) {}
+
+ClientData::~ClientData() {
+    if (m_parser != nullptr) {
+        delete m_parser;
+        m_parser = nullptr;
+    }
+}
+
 Server::Server(quint16 port, QObject *parent) : QTcpServer(parent) {
 
     if (!listen(QHostAddress::Any, port)) {
@@ -38,14 +49,16 @@ void Server::parseMessageFromClient() {
 
     QByteArray message = dataSender->readAll();
 
+    QRandomGenerator randomGenerator;
+
     if (message == "Hello") {
 
-        PackageParserType packageParserType = PackageParserType(QRandomGenerator::global()->bounded(0, int(PackageParserType::Count) - 1));
+        PackageParserType packageParserType = PackageParserType(randomGenerator.bounded(0, int(PackageParserType::Count) - 1));
 
         QString valueType = packageParserTypeName(packageParserType);
         m_connectedClients[dataSender].m_parser = PackageParser::makeParser(packageParserType);
 
-        quint64 bytes = QRandomGenerator::global()->bounded(0,1000);
+        quint64 bytes = randomGenerator.bounded(0,1000);
 
         PackageTypeToClient package(valueType, bytes);
 
@@ -57,7 +70,7 @@ void Server::parseMessageFromClient() {
         dataSender->write(block);
     }
     else {
-        m_connectedClients[dataSender].m_parser->parsePackage(message);
+        m_connectedClients[dataSender].m_parser->parseAndPrintPackage(message, m_connectedClients[dataSender].m_id);
         std::cout << "from Client" << m_connectedClients[dataSender].m_id << "\n" << "\n";
     }
 }

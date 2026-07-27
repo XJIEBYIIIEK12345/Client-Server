@@ -16,7 +16,7 @@ class PackageParser
 {
 public:
     virtual ~PackageParser() = default;
-    virtual void parsePackage(QByteArray data) = 0;
+    virtual void parseAndPrintPackage(QByteArray data, qint32 clientId) = 0;
 
     static PackageParser* makeParser(PackageParserType type);
 

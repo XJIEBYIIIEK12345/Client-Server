@@ -8,7 +8,7 @@ public:
     PackageParserForDouble();
     ~PackageParserForDouble();
 
-    void parsePackage(QByteArray data) override;
+    void parseAndPrintPackage(QByteArray data, qint32 clientId) override;
 };
 
 #endif // PACKAGEPARSERFORDOUBLE_H

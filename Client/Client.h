@@ -17,7 +17,7 @@ private slots:
     void sendHelloToServer();
     void startReconnectTimer();
     void readDataFromServer();
-    void timeForSend();
+    void sendPackageToServer();
 
 protected:
     void timerEvent(QTimerEvent *event) override;

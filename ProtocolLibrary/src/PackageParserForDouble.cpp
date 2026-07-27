@@ -5,7 +5,7 @@ PackageParserForDouble::PackageParserForDouble() {}
 
 PackageParserForDouble::~PackageParserForDouble() {}
 
-void PackageParserForDouble::parsePackage(QByteArray data) {
+void PackageParserForDouble::parseAndPrintPackage(QByteArray data, qint32 clientId) {
 
     m_buffer.append(data);
     double* sinus = reinterpret_cast<double*>(m_buffer.data());
@@ -17,7 +17,7 @@ void PackageParserForDouble::parsePackage(QByteArray data) {
         str += QString::number(sinus[i], 'f', 6) + ", ";
     }
 
-    qDebug() << "Server received:" << str;
+    qDebug() << "Server received:" << str << "from Client" << clientId << "\n" << "\n";
 
     m_buffer.remove(0, count * sizeof(double));
 }

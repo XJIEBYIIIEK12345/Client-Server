@@ -8,7 +8,7 @@ public:
     PackageParserForInt64();
     ~PackageParserForInt64();
 
-    void parsePackage(QByteArray data) override;
+    void parseAndPrintPackage(QByteArray data, qint32 clientId) override;
 };
 
 #endif // PACKAGEPARSERFORINT64_H

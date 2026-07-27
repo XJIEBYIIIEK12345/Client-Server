@@ -12,7 +12,7 @@ Client::Client(QString address, quint16 port, QObject *parent) : QObject(parent)
     m_address = address;
     m_port = port;
     m_socket = new QTcpSocket(this);
-    QTimer::connect(&m_timerForSend, &QTimer::timeout, this, &Client::timeForSend);
+    QTimer::connect(&m_timerForSend, &QTimer::timeout, this, &Client::sendPackageToServer);
     QTcpSocket::connect(m_socket, &QTcpSocket::readyRead, this, &Client::readDataFromServer);
     QTcpSocket::connect(m_socket, &QTcpSocket::disconnected, this, &Client::startReconnectTimer);
     QTcpSocket::connect(m_socket, &QTcpSocket::connected, this, &Client::sendHelloToServer);
@@ -73,7 +73,7 @@ void Client::readDataFromServer() {
     m_timerForSend.start(5000);
 }
 
-void Client::timeForSend() {
+void Client::sendPackageToServer() {
 
     QByteArray data = m_generator->generateSineForType();
     qDebug() << this << "send: " << data;
