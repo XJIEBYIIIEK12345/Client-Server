@@ -3,11 +3,22 @@
 #include <QByteArray>
 #include <QString>
 
+enum class SineGeneratorType {
+
+    SineGeneratorForInt16,
+    SineGeneratorForInt32,
+    SineGeneratorForInt64,
+    SineGeneratorForFloat,
+    SineGeneratorForDouble
+};
+
 class SineGenerator {
 
 public:
     virtual ~SineGenerator() = default;
     virtual QByteArray generateSineForType() = 0;
+
+    static SineGenerator* makeGenerator(QString str, quint64 bytes);
 
 protected:
     QByteArray m_block;

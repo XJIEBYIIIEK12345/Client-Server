@@ -14,7 +14,7 @@ void PackageParserForInt64::parsePackage(QByteArray data) {
 
     QString str;
     for (int i = 0; i < count; ++i) {
-        str += QString::number(float(sinus[i]) / float(std::numeric_limits<qint32>::max())) + ", ";
+        str += QString::number(float(sinus[i]) / float(std::numeric_limits<qint64>::max())) + ", ";
     }
 
     qDebug() << "Server received:" << str;

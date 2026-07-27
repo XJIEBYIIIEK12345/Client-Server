@@ -14,9 +14,9 @@ public:
     ~Client();
 
 private slots:
-    void connectedToServer();
-    void clientDisconnected();
-    void read();
+    void sendHelloToServer();
+    void startReconnectTimer();
+    void readDataFromServer();
     void timeForSend();
 
 protected:

@@ -6,11 +6,6 @@
 #include <QTimerEvent>
 #include "PackageTypeForClient.h"
 #include "SineGenerator.h"
-#include "SineGeneratorForInt16.h"
-#include "SineGeneratorForInt32.h"
-#include "SineGeneratorForInt64.h"
-#include "SineGeneratorForFloat.h"
-#include "SineGeneratorForDouble.h"
 
 Client::Client(QString address, quint16 port, QObject *parent) : QObject(parent) {
 
@@ -18,9 +13,9 @@ Client::Client(QString address, quint16 port, QObject *parent) : QObject(parent)
     m_port = port;
     m_socket = new QTcpSocket(this);
     QTimer::connect(&m_timerForSend, &QTimer::timeout, this, &Client::timeForSend);
-    QTcpSocket::connect(m_socket, &QTcpSocket::readyRead, this, &Client::read);
-    QTcpSocket::connect(m_socket, &QTcpSocket::disconnected, this, &Client::clientDisconnected);
-    QTcpSocket::connect(m_socket, &QTcpSocket::connected, this, &Client::connectedToServer);
+    QTcpSocket::connect(m_socket, &QTcpSocket::readyRead, this, &Client::readDataFromServer);
+    QTcpSocket::connect(m_socket, &QTcpSocket::disconnected, this, &Client::startReconnectTimer);
+    QTcpSocket::connect(m_socket, &QTcpSocket::connected, this, &Client::sendHelloToServer);
 
     m_socket->connectToHost(QHostAddress(m_address), m_port, QTcpSocket::ReadWrite);
 
@@ -36,7 +31,7 @@ Client::Client(QString address, quint16 port, QObject *parent) : QObject(parent)
 
 Client::~Client() {}
 
-void Client::connectedToServer() {
+void Client::sendHelloToServer() {
 
     if (m_timerIdForReconnect != 0) {
         killTimer(m_timerIdForReconnect);
@@ -51,43 +46,29 @@ void Client::connectedToServer() {
     m_socket->write(message);
 }
 
-void Client::clientDisconnected() {
+void Client::startReconnectTimer() {
 
     m_timerForSend.stop();
     qDebug() << "Disconnected from server";
+
+    if (m_generator != nullptr) {
+        delete m_generator;
+        m_generator = nullptr;
+    }
 
     if (m_timerIdForReconnect == 0) {
         m_timerIdForReconnect = startTimer(5000);
     }
 }
 
-void Client::read() {
+void Client::readDataFromServer() {
 
     QDataStream data(m_socket);
-
     PackageTypeToClient package;
 
     data >> package;
-    QString typeForPackageToSend = package.valueType;
 
-    if (typeForPackageToSend == "qint16") {
-        m_generator = new SineGeneratorForInt16(package.bytes);
-    }
-    else if (typeForPackageToSend == "qint32") {
-        m_generator = new SineGeneratorForInt32(package.bytes);
-    }
-    else if (typeForPackageToSend == "qint64") {
-        m_generator = new SineGeneratorForInt64(package.bytes);
-    }
-    else if (typeForPackageToSend == "float") {
-        m_generator = new SineGeneratorForFloat(package.bytes);
-    }
-    else if (typeForPackageToSend == "double") {
-        m_generator = new SineGeneratorForDouble(package.bytes);
-    }
-    else {
-        m_generator = new SineGeneratorForInt32(package.bytes);
-    }
+    m_generator = SineGenerator::makeGenerator(package.valueType, package.bytes);
 
     m_timerForSend.start(5000);
 }

@@ -13,6 +13,12 @@ struct ClientData {
 
     ClientData() : m_id(0) {}
     ClientData(quint32 _id) : m_id(_id) {}
+    ~ClientData() {
+        if (m_parser != nullptr) {
+            delete m_parser;
+            m_parser = nullptr;
+        }
+    }
 };
 
 class Server : public QTcpServer {
@@ -25,13 +31,13 @@ protected:
     void incomingConnection(qintptr socketDescriptor) override;
 
 private slots:
-    void onReadyRead();
-    void onDisconnected();
-    void onErrorOccurred();
-    void onStateChanged();
+    void parseMessageFromClient();
+    void cleanClientData();
+    void closeClientSocket();
+    void logClientState();
 
 private:
-    QMap<QTcpSocket*, ClientData> connectedClients;
+    QMap<QTcpSocket*, ClientData> m_connectedClients;
 };
 
 #endif // SERVER_H

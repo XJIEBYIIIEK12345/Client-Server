@@ -4,11 +4,6 @@
 #include <iostream>
 #include "PackageTypeForServer.h"
 #include "PackageParser.h"
-#include "PackageParserForInt16.h"
-#include "PackageParserForInt32.h"
-#include "PackageParserForInt64.h"
-#include "PackageParserForFloat.h"
-#include "PackageParserForDouble.h"
 
 Server::Server(quint16 port, QObject *parent) : QTcpServer(parent) {
 
@@ -23,19 +18,20 @@ void Server::incomingConnection(qintptr socketDescriptor) {
     QTcpSocket* socket = new QTcpSocket(this);
 
     if (socket->setSocketDescriptor(socketDescriptor)) {
-        connect(socket, &QTcpSocket::readyRead, this, &Server::onReadyRead);
-        connect(socket, &QTcpSocket::disconnected, this, &Server::onDisconnected);
-        connect(socket, &QTcpSocket::errorOccurred, this, &Server::onErrorOccurred);
-        connect(socket, &QTcpSocket::stateChanged, this, &Server::onStateChanged);
-        connectedClients.insert(socket, ClientData(connectedClients.size() + 1));
+        connect(socket, &QTcpSocket::readyRead, this, &Server::parseMessageFromClient);
+        connect(socket, &QTcpSocket::disconnected, this, &Server::cleanClientData);
+        connect(socket, &QTcpSocket::disconnected, socket, &QTcpSocket::deleteLater);
+        connect(socket, &QTcpSocket::errorOccurred, this, &Server::closeClientSocket);
+        connect(socket, &QTcpSocket::stateChanged, this, &Server::logClientState);
+        m_connectedClients.insert(socket, ClientData(m_connectedClients.size() + 1));
     } else {
         delete socket;
     }
 
-    qDebug() << "Client" << connectedClients[socket].m_id << " was connected";
+    qDebug() << "Client" << m_connectedClients[socket].m_id << " was connected";
 }
 
-void Server::onReadyRead() {
+void Server::parseMessageFromClient() {
 
     QTcpSocket* dataSender = qobject_cast<QTcpSocket*>(sender());
     if (!dataSender) return;
@@ -44,33 +40,10 @@ void Server::onReadyRead() {
 
     if (message == "Hello") {
 
-        QString valueType;
-        switch (QRandomGenerator::global()->bounded(1, 5)) {
-        case 1:
-            connectedClients[dataSender].m_parser = new PackageParserForInt16();
-            valueType = "qint16";
-            break;
-        case 2:
-            connectedClients[dataSender].m_parser = new PackageParserForInt32();
-            valueType = "qint32";
-            break;
-        case 3:
-            connectedClients[dataSender].m_parser = new PackageParserForInt64();
-            valueType = "qint64";
-            break;
-        case 4:
-            connectedClients[dataSender].m_parser = new PackageParserForFloat();
-            valueType = "float";
-            break;
-        case 5:
-            connectedClients[dataSender].m_parser = new PackageParserForDouble();
-            valueType = "double";
-            break;
-        default:
-            connectedClients[dataSender].m_parser = new PackageParserForInt32();
-            valueType = "qint32";
-            break;
-        }
+        PackageParserType packageParserType = PackageParserType(QRandomGenerator::global()->bounded(0, int(PackageParserType::Count) - 1));
+
+        QString valueType = packageParserTypeName(packageParserType);
+        m_connectedClients[dataSender].m_parser = PackageParser::makeParser(packageParserType);
 
         quint64 bytes = QRandomGenerator::global()->bounded(0,1000);
 
@@ -84,47 +57,45 @@ void Server::onReadyRead() {
         dataSender->write(block);
     }
     else {
-        connectedClients[dataSender].m_parser->parsePackage(message);
-        std::cout << "from Client" << connectedClients[dataSender].m_id << "\n" << "\n";
+        m_connectedClients[dataSender].m_parser->parsePackage(message);
+        std::cout << "from Client" << m_connectedClients[dataSender].m_id << "\n" << "\n";
     }
 }
 
-void Server::onDisconnected() {
+void Server::cleanClientData() {
     QTcpSocket* disconnectedSocket = qobject_cast<QTcpSocket*>(sender());
     if (!disconnectedSocket) return;
 
-    connectedClients.remove(disconnectedSocket);
-    disconnectedSocket->deleteLater();
+    m_connectedClients.remove(disconnectedSocket);
 }
 
-void Server::onErrorOccurred() {
+void Server::closeClientSocket() {
     QTcpSocket* socket = qobject_cast<QTcpSocket*>(sender());
     if (!socket) return;
 
     qDebug() << "Unknown error";
-    connectedClients.remove(socket);
-    socket->deleteLater();
+    socket->close();
 }
 
-void Server::onStateChanged() {
+void Server::logClientState() {
     QTcpSocket* socket = qobject_cast<QTcpSocket*>(sender());
     if (!socket) return;
 
     switch (socket->state()) {
     case QAbstractSocket::HostLookupState:
-        qDebug() << "Client" << connectedClients[socket].m_id << "is looking for host..." << "\n";
+        qDebug() << "Client" << m_connectedClients[socket].m_id << "is looking for host..." << "\n";
         break;
     case QAbstractSocket::ConnectingState:
-        qDebug() << "Client" << connectedClients[socket].m_id << "is connecting to server..." << "\n";
+        qDebug() << "Client" << m_connectedClients[socket].m_id << "is connecting to server..." << "\n";
         break;
     case QAbstractSocket::ConnectedState:
-        qDebug() << "Client" << connectedClients[socket].m_id << "is connected" << "\n";
+        qDebug() << "Client" << m_connectedClients[socket].m_id << "is connected" << "\n";
         break;
     case QAbstractSocket::ClosingState:
-        qDebug() << "Client" << connectedClients[socket].m_id << "is closing..." << "\n";
+        qDebug() << "Client" << m_connectedClients[socket].m_id << "is closing..." << "\n";
         break;
     case QAbstractSocket::UnconnectedState:
-        qDebug() << "Client" << connectedClients[socket].m_id << "is unconnected" << "\n";
+        qDebug() << "Client" << m_connectedClients[socket].m_id << "is unconnected" << "\n";
         break;
     default:
         break;

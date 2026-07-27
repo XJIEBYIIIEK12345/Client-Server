@@ -9,12 +9,7 @@ CONFIG += c++17 cmdline
 
 SOURCES += \
         Client.cpp \
-        SineGeneratorForDouble.cpp \
-        SineGeneratorForFloat.cpp \
-        SineGeneratorForInt16.cpp \
-        SineGeneratorForInt32.cpp \
-        SineGeneratorForInt64.cpp \
-        main.cpp
+        main.cpp \
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -23,14 +18,11 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     Client.h \
-    PackageTypeForClient.h \
-    SineGenerator.h \
-    SineGeneratorForDouble.h \
-    SineGeneratorForFloat.h \
-    SineGeneratorForInt16.h \
-    SineGeneratorForInt32.h \
-    SineGeneratorForInt64.h
 
-INCLUDEPATH += $$PWD/../general
+INCLUDEPATH += $$PWD/../ProtocolLibrary/include
+
+LIBS += -L$$OUT_PWD/../ProtocolLibrary -lProtocolLibrary
+
+QMAKE_LFLAGS += -Wl,-rpath,$$OUT_PWD/../ProtocolLibrary
 
 QMAKE_CFLAGS += -Werror -Wall
