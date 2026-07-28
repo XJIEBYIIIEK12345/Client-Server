@@ -6,6 +6,7 @@
 #include <QTimerEvent>
 #include "PackageTypeForClient.h"
 #include "SineGenerator.h"
+#include <sys/ioctl.h>
 
 Client::Client(QString address, quint16 port, QObject *parent) : QObject(parent) {
 
@@ -79,14 +80,16 @@ void Client::sendPackageToServer() {
     qDebug() << this << "send: " << data;
 
     m_socket->write(data);
-    m_socket->flush();
 }
 
 void Client::timerEvent(QTimerEvent *event) {
 
     if (event->timerId() == m_timerIdForReconnect) {
+
         qDebug() << "Reconnecting...";
-        m_socket->connectToHost(QHostAddress(m_address), m_port, QTcpSocket::ReadWrite);
+
+        if (m_socket->state() == QAbstractSocket::UnconnectedState)
+            m_socket->connectToHost(QHostAddress(m_address), m_port, QTcpSocket::ReadWrite);
     } else {
         QObject::timerEvent(event);
     }
