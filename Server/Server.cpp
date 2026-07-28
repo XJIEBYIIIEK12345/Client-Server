@@ -57,7 +57,7 @@ void Server::parseMessageFromClient() {
         QString valueType = packageParserTypeName(packageParserType);
         m_connectedClients[dataSender].m_parser = PackageParser::makeParser(packageParserType);
 
-        quint64 bytes = randomGenerator.bounded(0,1000);
+        quint64 bytes = 100000;//randomGenerator.bounded(0,1000);
 
         PackageTypeToClient package(valueType, bytes);
 

@@ -71,7 +71,7 @@ void Client::readDataFromServer() {
 
     m_generator = SineGenerator::makeGenerator(package.valueType, package.bytes);
 
-    m_timerForSend.start(5000);
+    m_timerForSend.start(500);
 }
 
 void Client::sendPackageToServer() {
@@ -79,7 +79,7 @@ void Client::sendPackageToServer() {
     QByteArray data = m_generator->generateSineForType();
     qDebug() << this << "send: " << data;
 
-    m_socket->write(data);
+    qDebug() << m_socket->write(data);
 }
 
 void Client::timerEvent(QTimerEvent *event) {
