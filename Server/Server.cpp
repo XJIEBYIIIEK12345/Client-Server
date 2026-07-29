@@ -34,6 +34,8 @@ void Server::incomingConnection(qintptr socketDescriptor) {
     int keepidle = 30;
     int keepintvl = 120;
 
+    socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+
     setsockopt(socketDescriptor, IPPROTO_TCP, TCP_KEEPCNT, &keepcnt, sizeof(int));
     setsockopt(socketDescriptor, IPPROTO_TCP, TCP_KEEPIDLE, &keepidle, sizeof(int));
     setsockopt(socketDescriptor, IPPROTO_TCP, TCP_KEEPINTVL, &keepintvl, sizeof(int));
