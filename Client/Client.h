@@ -29,6 +29,7 @@ private:
     QTimer m_timerForSend;
     int m_timerIdForReconnect = 0;
     SineGenerator* m_generator = nullptr;
+    qint32 m_countOfBytes;
 };
 
 #endif // CLIENT_H

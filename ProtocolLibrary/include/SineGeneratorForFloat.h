@@ -5,10 +5,10 @@
 class SineGeneratorForFloat : public SineGenerator {
 
 public:
-    SineGeneratorForFloat(qint32 bytes);
+    SineGeneratorForFloat();
     ~SineGeneratorForFloat();
 
-    QByteArray generateSineForType();
+    QByteArray generateSineForType(quint32 countOfBytes);
 };
 
 #endif // SINEGENERATORFORFLOAT_H

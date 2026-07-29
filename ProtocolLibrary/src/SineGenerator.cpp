@@ -5,24 +5,24 @@
 #include "SineGeneratorForFloat.h"
 #include "SineGeneratorForDouble.h"
 
-SineGenerator *SineGenerator::makeGenerator(QString str, quint64 bytes) {
+SineGenerator *SineGenerator::makeGenerator(QString str) {
 
     if (str == "qint16") {
-        return new SineGeneratorForInt16(bytes);
+        return new SineGeneratorForInt16();
     }
     else if (str == "qint32") {
-        return new SineGeneratorForInt32(bytes);
+        return new SineGeneratorForInt32();
     }
     else if (str == "qint64") {
-        return new SineGeneratorForInt64(bytes);
+        return new SineGeneratorForInt64();
     }
     else if (str == "float") {
-        return new SineGeneratorForFloat(bytes);
+        return new SineGeneratorForFloat();
     }
     else if (str == "double") {
-        return new SineGeneratorForDouble(bytes);
+        return new SineGeneratorForDouble();
     }
     else {
-        return new SineGeneratorForInt32(bytes);
+        return new SineGeneratorForInt32();
     }
 }

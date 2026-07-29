@@ -5,10 +5,10 @@
 class SineGeneratorForDouble : public SineGenerator {
 
 public:
-    SineGeneratorForDouble(qint32 bytes);
+    SineGeneratorForDouble();
     ~SineGeneratorForDouble();
 
-    QByteArray generateSineForType();
+    QByteArray generateSineForType(quint32 countOfBytes);
 };
 
 #endif // SINEGENERATORFORDOUBLE_H

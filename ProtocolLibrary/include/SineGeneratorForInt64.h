@@ -5,10 +5,10 @@
 class SineGeneratorForInt64 : public SineGenerator {
 
 public:
-    SineGeneratorForInt64(qint32 bytes);
+    SineGeneratorForInt64();
     ~SineGeneratorForInt64();
 
-    QByteArray generateSineForType();
+    QByteArray generateSineForType(quint32 countOfBytes);
 };
 
 #endif // SINEGENERATORFORINT64_H

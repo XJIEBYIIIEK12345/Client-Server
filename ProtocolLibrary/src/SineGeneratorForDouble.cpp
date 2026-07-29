@@ -1,9 +1,9 @@
 #include "SineGeneratorForDouble.h"
 #include <QtMath>
+#include <QDebug>
 
-SineGeneratorForDouble::SineGeneratorForDouble(qint32 bytes) {
+SineGeneratorForDouble::SineGeneratorForDouble() {
 
-    m_countOfBytes = bytes;
     m_lastSinePositionInSinusArray = 0;
 
     const qint16 size = sizeof(double);
@@ -18,28 +18,30 @@ SineGeneratorForDouble::SineGeneratorForDouble(qint32 bytes) {
 
 SineGeneratorForDouble::~SineGeneratorForDouble() {}
 
-QByteArray SineGeneratorForDouble::generateSineForType() {
+QByteArray SineGeneratorForDouble::generateSineForType(quint32 countOfBytes) {
 
     qint16 size = sizeof(double);
-    QByteArray block;
-    block.reserve(m_countOfBytes * size);
 
-    int count = m_block.size() / size;
-
-    if (m_countOfBytes + m_lastSinePositionInSinusArray < count)
-        block.append(m_block.constData() + m_lastSinePositionInSinusArray * size,
-                     m_countOfBytes * size);
-    else {
-        int partCountOfBytesForSendToServer = m_countOfBytes + m_lastSinePositionInSinusArray - count;
-        block.append(m_block.constData() + m_lastSinePositionInSinusArray * size,
-                     m_countOfBytes * size - partCountOfBytesForSendToServer * size);
-        block.append(m_block.constData(), partCountOfBytesForSendToServer * size);
+    if (m_lastSinePositionInSinusArray >= quint32(m_block.size() / size)) {
+        m_lastSinePositionInSinusArray = 0;
     }
 
-    m_lastSinePositionInSinusArray += m_countOfBytes;
+    QByteArray block;
+    block.reserve(countOfBytes * size);
 
-    if (m_lastSinePositionInSinusArray >= 1000)
-        m_lastSinePositionInSinusArray -= 1000;
+    quint32 tempBytes = 0;
+    while (tempBytes < countOfBytes) {
+
+        quint32 bytesLeft = countOfBytes - tempBytes;
+        quint32 bytesAvailable = m_block.size() / size - m_lastSinePositionInSinusArray;
+        quint32 chunk = qMin(bytesLeft, bytesAvailable);
+
+        block.append(m_block.constData() + m_lastSinePositionInSinusArray * size,
+                     chunk * size);
+
+        tempBytes += chunk;
+        m_lastSinePositionInSinusArray = (m_lastSinePositionInSinusArray + chunk) % (m_block.size() / size);
+    }
 
     return block;
 }

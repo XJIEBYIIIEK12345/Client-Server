@@ -5,10 +5,10 @@
 class SineGeneratorForInt32 : public SineGenerator {
 
 public:
-    SineGeneratorForInt32(qint32 bytes);
+    SineGeneratorForInt32();
     ~SineGeneratorForInt32();
 
-    QByteArray generateSineForType();
+    QByteArray generateSineForType(quint32 countOfBytes);
 };
 
 #endif // SINEGENERATORFORINT32_H
