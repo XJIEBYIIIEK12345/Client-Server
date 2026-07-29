@@ -6,13 +6,25 @@
 #include <QTimerEvent>
 #include "PackageTypeForClient.h"
 #include "SineGenerator.h"
-#include <sys/ioctl.h>
+#include <netinet/tcp.h>
+#include <netinet/in.h>
 
 Client::Client(QString address, quint16 port, QObject *parent) : QObject(parent) {
 
     m_address = address;
     m_port = port;
     m_socket = new QTcpSocket(this);
+
+    int keepcnt = 3;
+    int keepidle = 10;
+    int keepintvl = 10;
+
+    m_socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+
+    setsockopt(m_socket->socketDescriptor(), IPPROTO_TCP, TCP_KEEPCNT, &keepcnt, sizeof(int));
+    setsockopt(m_socket->socketDescriptor(), IPPROTO_TCP, TCP_KEEPIDLE, &keepidle, sizeof(int));
+    setsockopt(m_socket->socketDescriptor(), IPPROTO_TCP, TCP_KEEPINTVL, &keepintvl, sizeof(int));
+
     QTimer::connect(&m_timerForSend, &QTimer::timeout, this, &Client::sendPackageToServer);
     QTcpSocket::connect(m_socket, &QTcpSocket::readyRead, this, &Client::readDataFromServer);
     QTcpSocket::connect(m_socket, &QTcpSocket::disconnected, this, &Client::startReconnectTimer);

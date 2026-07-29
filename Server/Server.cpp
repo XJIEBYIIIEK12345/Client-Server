@@ -6,7 +6,6 @@
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 
-
 ClientData::ClientData() : m_id(0) {}
 
 ClientData::ClientData(quint32 _id) : m_id(_id) {}
