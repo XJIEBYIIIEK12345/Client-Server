@@ -51,7 +51,6 @@ void Client::sendHelloToServer() {
     setsockopt(m_socket->socketDescriptor(), IPPROTO_TCP, TCP_KEEPIDLE, &keepidle, sizeof(int));
     setsockopt(m_socket->socketDescriptor(), IPPROTO_TCP, TCP_KEEPINTVL, &keepintvl, sizeof(int));
 
-
     qDebug() << "Connected to server";
 
     QByteArray message;

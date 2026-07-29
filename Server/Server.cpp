@@ -5,6 +5,8 @@
 #include "PackageParser.h"
 #include <netinet/tcp.h>
 #include <netinet/in.h>
+#include <errno.h>
+#include <string.h>
 
 ClientData::ClientData() : m_id(0) {}
 
@@ -29,16 +31,6 @@ Server::Server(quint16 port, QObject *parent) : QTcpServer(parent) {
 void Server::incomingConnection(qintptr socketDescriptor) {
     QTcpSocket* socket = new QTcpSocket(this);
 
-    int keepcnt = 3;
-    int keepidle = 10;
-    int keepintvl = 10;
-
-    socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
-
-    setsockopt(socketDescriptor, IPPROTO_TCP, TCP_KEEPCNT, &keepcnt, sizeof(int));
-    setsockopt(socketDescriptor, IPPROTO_TCP, TCP_KEEPIDLE, &keepidle, sizeof(int));
-    setsockopt(socketDescriptor, IPPROTO_TCP, TCP_KEEPINTVL, &keepintvl, sizeof(int));
-
     if (socket->setSocketDescriptor(socketDescriptor)) {
         connect(socket, &QTcpSocket::readyRead, this, &Server::parseMessageFromClient);
         connect(socket, &QTcpSocket::disconnected, this, &Server::cleanClientData);
@@ -49,6 +41,16 @@ void Server::incomingConnection(qintptr socketDescriptor) {
     } else {
         delete socket;
     }
+
+    int keepcnt = 3;
+    int keepidle = 10;
+    int keepintvl = 10;
+
+    socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+
+    setsockopt(socketDescriptor, IPPROTO_TCP, TCP_KEEPCNT, &keepcnt, sizeof(int));
+    setsockopt(socketDescriptor, IPPROTO_TCP, TCP_KEEPIDLE, &keepidle, sizeof(int));
+    setsockopt(socketDescriptor, IPPROTO_TCP, TCP_KEEPINTVL, &keepintvl, sizeof(int));
 
     qDebug() << "Client" << m_connectedClients[socket].m_id << " was connected";
 }
