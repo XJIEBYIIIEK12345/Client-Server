@@ -3,6 +3,9 @@
 #include <QDataStream>
 #include "PackageTypeForServer.h"
 #include "PackageParser.h"
+#include <netinet/tcp.h>
+#include <netinet/in.h>
+
 
 ClientData::ClientData() : m_id(0) {}
 
@@ -26,6 +29,14 @@ Server::Server(quint16 port, QObject *parent) : QTcpServer(parent) {
 
 void Server::incomingConnection(qintptr socketDescriptor) {
     QTcpSocket* socket = new QTcpSocket(this);
+
+    int keepcnt = 5;
+    int keepidle = 30;
+    int keepintvl = 120;
+
+    setsockopt(socketDescriptor, IPPROTO_TCP, TCP_KEEPCNT, &keepcnt, sizeof(int));
+    setsockopt(socketDescriptor, IPPROTO_TCP, TCP_KEEPIDLE, &keepidle, sizeof(int));
+    setsockopt(socketDescriptor, IPPROTO_TCP, TCP_KEEPINTVL, &keepintvl, sizeof(int));
 
     if (socket->setSocketDescriptor(socketDescriptor)) {
         connect(socket, &QTcpSocket::readyRead, this, &Server::parseMessageFromClient);
