@@ -30,9 +30,9 @@ Server::Server(quint16 port, QObject *parent) : QTcpServer(parent) {
 void Server::incomingConnection(qintptr socketDescriptor) {
     QTcpSocket* socket = new QTcpSocket(this);
 
-    int keepcnt = 5;
-    int keepidle = 30;
-    int keepintvl = 120;
+    int keepcnt = 3;
+    int keepidle = 10;
+    int keepintvl = 10;
 
     socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 
