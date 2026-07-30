@@ -44,4 +44,3 @@ QByteArray SineGeneratorForFloat::generateSineForType(quint32 countOfBytes) {
 
     return block;
 }
-

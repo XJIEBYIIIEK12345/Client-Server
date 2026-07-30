@@ -8,7 +8,7 @@ PackageParserForDouble::~PackageParserForDouble() {}
 void PackageParserForDouble::parseAndPrintPackage(QByteArray data, qint32 clientId) {
 
     m_buffer.append(data);
-    double* sinus = reinterpret_cast<double*>(m_buffer.data());
+    const double* sinus = reinterpret_cast<const double*>(m_buffer.constData());
 
     qint32 count = m_buffer.size() / sizeof(double);
 

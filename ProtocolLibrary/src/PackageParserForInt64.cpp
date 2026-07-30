@@ -8,7 +8,7 @@ PackageParserForInt64::~PackageParserForInt64() {}
 void PackageParserForInt64::parseAndPrintPackage(QByteArray data, qint32 clientId) {
 
     m_buffer.append(data);
-    qint64* sinus = reinterpret_cast<qint64*>(m_buffer.data());
+    const qint64* sinus = reinterpret_cast<const qint64*>(m_buffer.constData());
 
     qint32 count = m_buffer.size() / sizeof(qint64);
 

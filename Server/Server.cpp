@@ -5,14 +5,13 @@
 #include "PackageParser.h"
 #include <netinet/tcp.h>
 #include <netinet/in.h>
-#include <errno.h>
-#include <string.h>
 
 ClientData::ClientData() : m_id(0) {}
 
 ClientData::ClientData(quint32 _id) : m_id(_id) {}
 
 ClientData::~ClientData() {
+
     if (m_parser != nullptr) {
         delete m_parser;
         m_parser = nullptr;
@@ -66,12 +65,12 @@ void Server::parseMessageFromClient() {
 
     if (message == "Hello") {
 
-        PackageParserType packageParserType = PackageParserType(randomGenerator.bounded(0, int(PackageParserType::Count) - 1));
+        PackageParserType packageParserType = PackageParserType(4);//(randomGenerator.bounded(0, int(PackageParserType::Count) - 1));
 
         QString valueType = packageParserTypeName(packageParserType);
         m_connectedClients[dataSender].m_parser = PackageParser::makeParser(packageParserType);
 
-        quint32 bytes = 100000;//randomGenerator.bounded(0,1000);
+        quint32 bytes = randomGenerator.bounded(0,1000);
 
         PackageTypeToClient package(valueType, bytes);
 
@@ -83,6 +82,8 @@ void Server::parseMessageFromClient() {
         dataSender->write(block);
     }
     else {
+        QByteArray ok = "ok";
+        dataSender->write(ok);
         m_connectedClients[dataSender].m_parser->parseAndPrintPackage(message, m_connectedClients[dataSender].m_id);
     }
 }

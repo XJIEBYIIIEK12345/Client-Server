@@ -8,7 +8,7 @@ PackageParserForInt32::~PackageParserForInt32() {}
 void PackageParserForInt32::parseAndPrintPackage(QByteArray data, qint32 clientId) {
 
     m_buffer.append(data);
-    qint32* sinus = reinterpret_cast<qint32*>(m_buffer.data());
+    const qint32* sinus = reinterpret_cast<const qint32*>(m_buffer.constData());
 
     qint32 count = m_buffer.size() / sizeof(qint32);
 

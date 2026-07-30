@@ -8,7 +8,7 @@ PackageParserForFloat::~PackageParserForFloat() {}
 void PackageParserForFloat::parseAndPrintPackage(QByteArray data, qint32 clientId) {
 
     m_buffer.append(data);
-    float* sinus = reinterpret_cast<float*>(m_buffer.data());
+    const float* sinus = reinterpret_cast<const float*>(m_buffer.constData());
 
     qint32 count = m_buffer.size() / sizeof(float);
 

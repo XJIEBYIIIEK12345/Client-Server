@@ -14,16 +14,19 @@ Client::Client(QString address, quint16 port, QObject *parent) : QObject(parent)
     m_address = address;
     m_port = port;
     m_socket = new QTcpSocket(this);
+}
 
-    QTimer::connect(&m_timerForSend, &QTimer::timeout, this, &Client::sendPackageToServer);
+Client::~Client() {}
+
+void Client::clientIsConnecting() {
+
     QTcpSocket::connect(m_socket, &QTcpSocket::readyRead, this, &Client::readDataFromServer);
     QTcpSocket::connect(m_socket, &QTcpSocket::disconnected, this, &Client::startReconnectTimer);
     QTcpSocket::connect(m_socket, &QTcpSocket::connected, this, &Client::sendHelloToServer);
 
     m_socket->connectToHost(QHostAddress(m_address), m_port, QTcpSocket::ReadWrite);
 
-    if (!m_socket->waitForConnected(1000)) {
-
+    if (m_socket->state() == QAbstractSocket::UnconnectedState) {
         qDebug() << "Failed to connect to server. Reconnecting...";
 
         if (m_timerIdForReconnect == 0) {
@@ -31,8 +34,6 @@ Client::Client(QString address, quint16 port, QObject *parent) : QObject(parent)
         }
     }
 }
-
-Client::~Client() {}
 
 void Client::sendHelloToServer() {
 
@@ -53,15 +54,17 @@ void Client::sendHelloToServer() {
 
     qDebug() << "Connected to server";
 
-    QByteArray message;
-    message = "Hello";
-
+    QByteArray message = "Hello";
     m_socket->write(message);
 }
 
 void Client::startReconnectTimer() {
 
-    m_timerForSend.stop();
+    if (m_timerIdForSend != 0) {
+        killTimer(m_timerIdForSend);
+        m_timerIdForSend = 0;
+    }
+
     qDebug() << "Disconnected from server";
 
     if (m_generator != nullptr) {
@@ -76,34 +79,57 @@ void Client::startReconnectTimer() {
 
 void Client::readDataFromServer() {
 
-    QDataStream data(m_socket);
-    PackageTypeToClient package;
+    QByteArray message = m_socket->readAll();
 
-    data >> package;
+    if (message == "ok") {
 
-    m_countOfBytes = package.bytes;
+        if (m_timerIdForSend == 0) {
+            m_timerIdForSend = startTimer(2500);
+        }
+    }
+    else {
 
-    m_generator = SineGenerator::makeGenerator(package.valueType);
+        QDataStream data(message);
 
-    m_timerForSend.start(500);
+        PackageTypeToClient package;
+        data >> package;
+
+        m_countOfBytes = package.bytes;
+        m_generator = SineGenerator::makeGenerator(package.valueType);
+
+        if (m_timerIdForSend == 0) {
+            m_timerIdForSend = startTimer(2500);
+        }
+    }
 }
 
 void Client::sendPackageToServer() {
 
+    if (m_timerIdForSend != 0) {
+        killTimer(m_timerIdForSend);
+        m_timerIdForSend = 0;
+    }
+
     QByteArray data = m_generator->generateSineForType(m_countOfBytes);
+
     qDebug() << this << "send: " << data;
 
-    qDebug() << m_socket->write(data);
+    m_socket->write(data);
+}
+
+void Client::reconnect() {
+    qDebug() << "Reconnecting...";
+
+    if (m_socket->state() == QAbstractSocket::UnconnectedState)
+        m_socket->connectToHost(QHostAddress(m_address), m_port, QTcpSocket::ReadWrite);
 }
 
 void Client::timerEvent(QTimerEvent *event) {
 
     if (event->timerId() == m_timerIdForReconnect) {
-
-        qDebug() << "Reconnecting...";
-
-        if (m_socket->state() == QAbstractSocket::UnconnectedState)
-            m_socket->connectToHost(QHostAddress(m_address), m_port, QTcpSocket::ReadWrite);
+        reconnect();
+    } else if (event->timerId() == m_timerIdForSend) {
+        sendPackageToServer();
     } else {
         QObject::timerEvent(event);
     }
