@@ -12,7 +12,7 @@ class Client : public QObject {
 public:
     explicit Client(QString address, quint16 port, QObject *parent = nullptr);
     ~Client();
-    void clientIsConnecting();
+    void init();
 
 private slots:
     void sendHelloToServer();
@@ -21,7 +21,7 @@ private slots:
 
 protected:
     void sendPackageToServer();
-    void reconnect();
+    void connectToServer();
     void timerEvent(QTimerEvent *event) override;
 
 private:

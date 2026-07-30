@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     quint16 port = parser.value(portOption).toUShort();
 
     Client client(address, port);
-    client.clientIsConnecting();
+    client.init();
 
     return a.exec();
 }

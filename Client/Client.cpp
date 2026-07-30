@@ -13,26 +13,18 @@ Client::Client(QString address, quint16 port, QObject *parent) : QObject(parent)
 
     m_address = address;
     m_port = port;
-    m_socket = new QTcpSocket(this);
 }
 
 Client::~Client() {}
 
-void Client::clientIsConnecting() {
+void Client::init() {
 
+    m_socket = new QTcpSocket(this);
     QTcpSocket::connect(m_socket, &QTcpSocket::readyRead, this, &Client::readDataFromServer);
     QTcpSocket::connect(m_socket, &QTcpSocket::disconnected, this, &Client::startReconnectTimer);
     QTcpSocket::connect(m_socket, &QTcpSocket::connected, this, &Client::sendHelloToServer);
 
-    m_socket->connectToHost(QHostAddress(m_address), m_port, QTcpSocket::ReadWrite);
-
-    if (m_socket->state() == QAbstractSocket::UnconnectedState) {
-        qDebug() << "Failed to connect to server. Reconnecting...";
-
-        if (m_timerIdForReconnect == 0) {
-            m_timerIdForReconnect = startTimer(5000);
-        }
-    }
+    m_timerIdForReconnect = startTimer(5000);
 }
 
 void Client::sendHelloToServer() {
@@ -124,17 +116,18 @@ void Client::sendPackageToServer() {
     }
 }
 
-void Client::reconnect() {
-    qDebug() << "Reconnecting...";
+void Client::connectToServer() {
 
-    if (m_socket->state() == QAbstractSocket::UnconnectedState)
+    if (m_socket->state() != QAbstractSocket::ConnectedState) {
+        qDebug() << "Connecting...";
         m_socket->connectToHost(QHostAddress(m_address), m_port, QTcpSocket::ReadWrite);
+    }
 }
 
 void Client::timerEvent(QTimerEvent *event) {
 
     if (event->timerId() == m_timerIdForReconnect) {
-        reconnect();
+        connectToServer();
     } else if (event->timerId() == m_timerIdForSend) {
         sendPackageToServer();
     } else {
