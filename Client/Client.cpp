@@ -118,7 +118,7 @@ void Client::sendPackageToServer() {
 
 void Client::connectToServer() {
 
-    if (m_socket->state() != QAbstractSocket::ConnectedState) {
+    if ((m_socket->state() != QAbstractSocket::ConnectedState) && (m_socket->state() != QAbstractSocket::ConnectingState)) {
         qDebug() << "Connecting...";
         m_socket->connectToHost(QHostAddress(m_address), m_port, QTcpSocket::ReadWrite);
     }
