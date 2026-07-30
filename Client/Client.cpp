@@ -115,6 +115,13 @@ void Client::sendPackageToServer() {
     qDebug() << this << "send: " << data;
 
     m_socket->write(data);
+
+    if (!m_socket->waitForReadyRead(10000)) {
+        m_socket->close();
+        if (m_timerIdForReconnect == 0) {
+            m_timerIdForReconnect = startTimer(5000);
+        }
+    }
 }
 
 void Client::reconnect() {
