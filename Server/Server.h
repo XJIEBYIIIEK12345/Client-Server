@@ -10,6 +10,7 @@
 struct ClientData {
     quint32 m_id;
     PackageParser* m_parser = nullptr;
+    QByteArray m_jsonBuffer;
 
     ClientData();
     ClientData(quint32 _id);

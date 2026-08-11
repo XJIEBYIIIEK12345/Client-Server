@@ -46,7 +46,11 @@ void Client::sendHelloToServer() {
 
     qDebug() << "Connected to server";
 
-    QByteArray message = "Hello";
+    QByteArray data = "Hello";
+
+    QJsonObject jsonObj = createJsonObject(data.size(), "connection", data);
+    QByteArray message = jsonObjToByteArray(jsonObj);
+
     m_socket->write(message);
 }
 
@@ -73,20 +77,21 @@ void Client::readDataFromServer() {
 
     QByteArray message = m_socket->readAll();
 
-    if (message == "ok") {
+    QJsonObject jsonObjFromServer = byteArrayToJsonObj(message);
+
+    qint32 count = jsonObjFromServer["count"].toInt();
+    QString type = jsonObjFromServer["type"].toString();
+    QByteArray data = QByteArray::fromBase64(jsonObjFromServer["data"].toString().toUtf8());
+
+    if (type == "sinRequest") {
+
+        m_countOfBytes = count;
+        m_generator = SineGenerator::makeGenerator(QString(data));
 
         if (m_timerIdForSend == 0) {
             m_timerIdForSend = startTimer(2500);
         }
-    } else {
-
-        QDataStream data(message);
-
-        PackageTypeToClient package;
-        data >> package;
-
-        m_countOfBytes = package.bytes;
-        m_generator = SineGenerator::makeGenerator(package.valueType);
+    } else if (type == "sinConfirmation" && data == "ok") {
 
         if (m_timerIdForSend == 0) {
             m_timerIdForSend = startTimer(2500);
@@ -103,9 +108,12 @@ void Client::sendPackageToServer() {
 
     QByteArray data = m_generator->generateSineForType(m_countOfBytes);
 
+    QJsonObject jsonObjFromClient = createJsonObject(data.size(), "sinAnswer", data);
+    QByteArray message = jsonObjToByteArray(jsonObjFromClient);
+
     qDebug() << this << "send: " << data;
 
-    m_socket->write(data);
+    m_socket->write(message);
 
     if (!m_socket->waitForReadyRead(10000)) {
         m_socket->close();

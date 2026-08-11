@@ -6,22 +6,35 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
+    QStringList protocols = {"json", "bin", "xml"};
+
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
 
-    QCommandLineOption addressOption(QStringList() << "address", "Server IP", "address", "127.0.0.1");
+    QCommandLineOption addressOption(QStringList() << "address", "Server IP (default: 127.0.0.1)", "address", "127.0.0.1");
     parser.addOption(addressOption);
-    QCommandLineOption portOption(QStringList() << "port", "Port", "port", "6789");
+    QCommandLineOption portOption(QStringList() << "port", "Port (default: 6789)", "port", "6789");
     parser.addOption(portOption);
+    QCommandLineOption protocolOption (QStringList() << "protocol", "Transmitted data format (json, bin, xml) (default: json)", "protocol", "json");
+    parser.addOption(protocolOption);
 
     parser.process(a);
 
     QString address = parser.value(addressOption);
     quint16 port = parser.value(portOption).toUShort();
+    QString protocol = parser.value(protocolOption);
 
-    Client client(address, port);
-    client.init();
+    if (!protocols.contains(protocol)) {
+        qDebug() << "This data format is not supported";
+        return -1;
+    } else {
+        qDebug() << "Client is working with" << protocol << "data format";
+        qDebug() << "Client is waiting for server on address:" << address << ", port:" << port;
 
-    return a.exec();
+        Client client(address, port);
+        client.init();
+
+        return a.exec();
+    }
 }
