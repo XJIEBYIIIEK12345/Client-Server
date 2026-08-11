@@ -1,7 +1,7 @@
 #include "Server.h"
 #include <QRandomGenerator64>
 #include <QDataStream>
-#include "PackageTypeForServer.h"
+#include "PackageType.h"
 #include "PackageParser.h"
 #include <netinet/tcp.h>
 #include <netinet/in.h>

@@ -4,7 +4,7 @@
 #include <QDataStream>
 #include <QTimer>
 #include <QTimerEvent>
-#include "PackageTypeForClient.h"
+#include "PackageType.h"
 #include "SineGenerator.h"
 #include <netinet/tcp.h>
 #include <netinet/in.h>
@@ -78,8 +78,7 @@ void Client::readDataFromServer() {
         if (m_timerIdForSend == 0) {
             m_timerIdForSend = startTimer(2500);
         }
-    }
-    else {
+    } else {
 
         QDataStream data(message);
 

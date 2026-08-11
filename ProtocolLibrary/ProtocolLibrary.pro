@@ -27,6 +27,7 @@ SOURCES += \
     src/PackageParserForInt64.cpp
 
 HEADERS += \
+    include/PackageType.h \
     include/SineGenerator.h \
     include/SineGeneratorForDouble.h \
     include/SineGeneratorForFloat.h \
@@ -38,9 +39,7 @@ HEADERS += \
     include/PackageParserForFloat.h \
     include/PackageParserForInt16.h \
     include/PackageParserForInt32.h \
-    include/PackageParserForInt64.h \
-    include/PackageTypeForClient.h \
-    include/PackageTypeForServer.h
+    include/PackageParserForInt64.h
 
 # Default rules for deployment.
 unix {

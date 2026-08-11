@@ -1,5 +1,5 @@
-#ifndef PACKAGETYPEFORCLIENT_H
-#define PACKAGETYPEFORCLIENT_H
+#ifndef PACKAGETYPE_H
+#define PACKAGETYPE_H
 #include <QString>
 #include <QDataStream>
 
@@ -15,4 +15,9 @@ inline QDataStream &operator>>(QDataStream &in, PackageTypeToClient& packageType
     in >> packageTypeToClient.valueType >> packageTypeToClient.bytes;
     return in;
 }
-#endif // PACKAGETYPEFORCLIENT_H
+
+inline QDataStream &operator<<(QDataStream &out, const PackageTypeToClient& packageTypeToClient) {
+    out << packageTypeToClient.valueType << packageTypeToClient.bytes;
+    return out;
+}
+#endif // PACKAGETYPE_H
