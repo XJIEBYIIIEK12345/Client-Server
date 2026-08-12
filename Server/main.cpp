@@ -27,8 +27,7 @@ int main(int argc, char *argv[])
         qDebug() << "This data format is not supported";
         return -1;
     } else {
-        qDebug() << "Server is working with" << protocol << "data format";
-        Server server(port);
+        Server server(port, protocol);
 
         return a.exec();
     }

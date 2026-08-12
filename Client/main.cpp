@@ -29,10 +29,7 @@ int main(int argc, char *argv[])
         qDebug() << "This data format is not supported";
         return -1;
     } else {
-        qDebug() << "Client is working with" << protocol << "data format";
-        qDebug() << "Client is waiting for server on address:" << address << ", port:" << port;
-
-        Client client(address, port);
+        Client client(address, port, protocol);
         client.init();
 
         return a.exec();

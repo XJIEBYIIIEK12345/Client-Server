@@ -4,15 +4,19 @@
 #include <QDataStream>
 #include <QTimer>
 #include <QTimerEvent>
-#include "PackageType.h"
 #include "SineGenerator.h"
 #include <netinet/tcp.h>
 #include <netinet/in.h>
+#include "IProtocol.h"
 
-Client::Client(QString address, quint16 port, QObject *parent) : QObject(parent) {
+Client::Client(QString address, quint16 port, QString protocol, QObject *parent) : QObject(parent) {
 
     m_address = address;
     m_port = port;
+    m_protocol = IProtocol::makeProtocol(protocol);
+
+    qDebug() << "Client is waiting for server on address:" << address << ", port:" << port;
+    qDebug() << "Client is working with" << protocol << "data format";
 }
 
 Client::~Client() {}
@@ -47,9 +51,9 @@ void Client::sendHelloToServer() {
     qDebug() << "Connected to server";
 
     QByteArray data = "Hello";
+    m_protocol->m_package.setPackageData(data.size(), "connection", data);
 
-    QJsonObject jsonObj = createJsonObject(data.size(), "connection", data);
-    QByteArray message = jsonObjToByteArray(jsonObj);
+    QByteArray message = m_protocol->encodeData();
 
     m_socket->write(message);
 }
@@ -76,25 +80,32 @@ void Client::startReconnectTimer() {
 void Client::readDataFromServer() {
 
     QByteArray message = m_socket->readAll();
+    m_protocol->m_buffer.append(message);
 
-    QJsonObject jsonObjFromServer = byteArrayToJsonObj(message);
+    if (m_protocol->decodeData()) {
 
-    qint32 count = jsonObjFromServer["count"].toInt();
-    QString type = jsonObjFromServer["type"].toString();
-    QByteArray data = QByteArray::fromBase64(jsonObjFromServer["data"].toString().toUtf8());
+        qint32 count = m_protocol->m_package.count;
+        QString type = m_protocol->m_package.type;
+        QByteArray data = m_protocol->m_package.data;
 
-    if (type == "sinRequest") {
+        if (m_protocol->m_buffer.size() != 0)
+            m_protocol->m_buffer.clear();
 
-        m_countOfBytes = count;
-        m_generator = SineGenerator::makeGenerator(QString(data));
+        if (type == "sinRequest") {
 
-        if (m_timerIdForSend == 0) {
-            m_timerIdForSend = startTimer(2500);
-        }
-    } else if (type == "sinConfirmation" && data == "ok") {
+            //qDebug() << QString(data);
 
-        if (m_timerIdForSend == 0) {
-            m_timerIdForSend = startTimer(2500);
+            m_countOfBytes = count;
+            m_generator = SineGenerator::makeGenerator(QString(data));
+
+            if (m_timerIdForSend == 0) {
+                m_timerIdForSend = startTimer(2500);
+            }
+        } else if (type == "sinConfirmation" && data == "ok") {
+
+            if (m_timerIdForSend == 0) {
+                m_timerIdForSend = startTimer(2500);
+            }
         }
     }
 }
@@ -105,11 +116,10 @@ void Client::sendPackageToServer() {
         killTimer(m_timerIdForSend);
         m_timerIdForSend = 0;
     }
-
     QByteArray data = m_generator->generateSineForType(m_countOfBytes);
 
-    QJsonObject jsonObjFromClient = createJsonObject(data.size(), "sinAnswer", data);
-    QByteArray message = jsonObjToByteArray(jsonObjFromClient);
+    m_protocol->m_package.setPackageData(data.size(), "sinAnswer", data);
+    QByteArray message = m_protocol->encodeData();
 
     qDebug() << this << "send: " << data;
 

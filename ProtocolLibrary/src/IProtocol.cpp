@@ -14,3 +14,15 @@ IProtocol* IProtocol::makeProtocol(ProtocolDataType type) {
         return new JsonProtocol();
     }
 }
+
+IProtocol* IProtocol::makeProtocol(QString type) {
+
+    if (type == "json")
+        return new JsonProtocol();
+    // else if (type == "bin")
+    //     return new BinProtocol();
+    // else if (type == "xml")
+    //     return new XmlProtocol();
+    else return new JsonProtocol();
+}
+

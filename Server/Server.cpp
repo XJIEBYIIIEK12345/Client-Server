@@ -1,7 +1,6 @@
 #include "Server.h"
 #include <QRandomGenerator64>
 #include <QDataStream>
-#include "PackageType.h"
 #include "PackageParser.h"
 #include <netinet/tcp.h>
 #include <netinet/in.h>
@@ -18,12 +17,14 @@ ClientData::~ClientData() {
     }
 }
 
-Server::Server(quint16 port, QObject *parent) : QTcpServer(parent) {
+Server::Server(quint16 port, QString protocol, QObject *parent) : QTcpServer(parent) {
 
     if (!listen(QHostAddress::Any, port)) {
         qDebug() << "Server was not started\n";
     } else {
         qDebug() << "Server was started on port:" << port << "\n";
+        m_serverProtocol = protocol;
+        qDebug() << "Server is working with" << protocol << "data format";
     }
 }
 
@@ -51,6 +52,8 @@ void Server::incomingConnection(qintptr socketDescriptor) {
     setsockopt(socketDescriptor, IPPROTO_TCP, TCP_KEEPIDLE, &keepidle, sizeof(int));
     setsockopt(socketDescriptor, IPPROTO_TCP, TCP_KEEPINTVL, &keepintvl, sizeof(int));
 
+    m_connectedClients[socket].m_clientProtocol = IProtocol::makeProtocol(m_serverProtocol);
+
     qDebug() << "Client" << m_connectedClients[socket].m_id << " was connected";
 }
 
@@ -59,46 +62,50 @@ void Server::parseMessageFromClient() {
     QTcpSocket* dataSender = qobject_cast<QTcpSocket*>(sender());
     if (!dataSender) return;
 
-    QByteArray messageFromClient = dataSender->readAll();
-    m_connectedClients[dataSender].m_jsonBuffer.append(messageFromClient);
+    //QByteArray messageFromClient = dataSender->readAll();
+    m_connectedClients[dataSender].m_clientProtocol->m_buffer.append(dataSender->readAll());
 
-    QJsonObject jsonObjFromClient = byteArrayToJsonObj(messageFromClient);
+    if (m_connectedClients[dataSender].m_clientProtocol->decodeData()) {
 
-    qint32 count = jsonObjFromClient["count"].toInt();
-    QString type = jsonObjFromClient["type"].toString();
-    QByteArray data = QByteArray::fromBase64(jsonObjFromClient["data"].toString().toUtf8());
+        qint32 count = m_connectedClients[dataSender].m_clientProtocol->m_package.count;
+        QString type = m_connectedClients[dataSender].m_clientProtocol->m_package.type;
+        QByteArray data = m_connectedClients[dataSender].m_clientProtocol->m_package.data;
 
-    qDebug() << jsonObjFromClient.size();
+        if (m_connectedClients[dataSender].m_clientProtocol->m_buffer.size() != 0)
+            m_connectedClients[dataSender].m_clientProtocol->m_buffer.clear();
 
-    QRandomGenerator randomGenerator;
+        QRandomGenerator randomGenerator;
 
-    if (type == "connection" && data == "Hello") {
+        if (type == "connection" && data == "Hello") {
 
-        PackageParserType packageParserType = PackageParserType(randomGenerator.bounded(0, int(PackageParserType::Count) - 1));
+            PackageParserType packageParserType = PackageParserType(randomGenerator.bounded(0, int(PackageParserType::Count) - 1));
 
-        QString valueType = packageParserTypeName(packageParserType);
-        m_connectedClients[dataSender].m_parser = PackageParser::makeParser(packageParserType);
+            QString valueType = packageParserTypeName(packageParserType);
+            m_connectedClients[dataSender].m_parser = PackageParser::makeParser(packageParserType);
 
-        quint32 bytes = randomGenerator.bounded(0,1000);
+            quint32 bytes = randomGenerator.bounded(0, 1000);
 
-        QJsonObject jsonObjFromServer = createJsonObject(bytes, "sinRequest", QByteArray::fromBase64(valueType.toUtf8()));
-        QByteArray messageFromServer = jsonObjToByteArray(jsonObjFromServer);
+            qDebug() << bytes << m_connectedClients[dataSender].m_id;
 
-        dataSender->write(messageFromServer);
-    }
-    else if (type == "sinAnswer") {
+            //m_connectedClients[dataSender].m_clientProtocol->m_package.setPackageData(bytes, "sinRequest", valueType.toUtf8());
+            m_connectedClients[dataSender].m_clientProtocol->m_package.setPackageData(bytes, "sinRequest", valueType.toUtf8());
 
-        qDebug() << count << data.size();
-
-        if (count <= data.size()) {
-
-            QByteArray ok = "ok";
-
-            QJsonObject jsonObjFromServer = createJsonObject(ok.size(), "sinConfirmation", ok);
-            QByteArray messageFromServer = jsonObjToByteArray(jsonObjFromServer);
+            QByteArray messageFromServer = m_connectedClients[dataSender].m_clientProtocol->encodeData();
 
             dataSender->write(messageFromServer);
-            m_connectedClients[dataSender].m_parser->parseAndPrintPackage(data, m_connectedClients[dataSender].m_id);
+        }
+        else if (type == "sinAnswer") {
+
+            if (count <= data.size()) {
+
+                QByteArray ok = "ok";
+
+                m_connectedClients[dataSender].m_clientProtocol->m_package.setPackageData(ok.size(), "sinConfirmation", ok);
+                QByteArray messageFromServer = m_connectedClients[dataSender].m_clientProtocol->encodeData();
+
+                dataSender->write(messageFromServer);
+                m_connectedClients[dataSender].m_parser->parseAndPrintPackage(data, m_connectedClients[dataSender].m_id);
+            }
         }
     }
 }

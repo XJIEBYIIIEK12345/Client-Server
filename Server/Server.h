@@ -6,11 +6,12 @@
 #include <QTcpSocket>
 #include <QMap>
 #include "PackageParser.h"
+#include "IProtocol.h"
 
 struct ClientData {
     quint32 m_id;
     PackageParser* m_parser = nullptr;
-    QByteArray m_jsonBuffer;
+    IProtocol* m_clientProtocol = nullptr;
 
     ClientData();
     ClientData(quint32 _id);
@@ -21,7 +22,7 @@ class Server : public QTcpServer {
     Q_OBJECT
 
 public:
-    explicit Server(quint16 port, QObject *parent = nullptr);
+    explicit Server(quint16 port, QString protocol, QObject *parent = nullptr);
 
 protected:
     void incomingConnection(qintptr socketDescriptor) override;
@@ -34,6 +35,7 @@ private slots:
 
 private:
     QMap<QTcpSocket*, ClientData> m_connectedClients;
+    QString m_serverProtocol;
 };
 
 #endif // SERVER_H

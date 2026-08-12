@@ -5,12 +5,13 @@
 #include <QHostAddress>
 #include <QTimer>
 #include "SineGenerator.h"
+#include "IProtocol.h"
 
 class Client : public QObject {
     Q_OBJECT
 
 public:
-    explicit Client(QString address, quint16 port, QObject *parent = nullptr);
+    explicit Client(QString address, quint16 port, QString protocol, QObject *parent = nullptr);
     ~Client();
     void init();
 
@@ -32,6 +33,7 @@ private:
     int m_timerIdForReconnect = 0;
     SineGenerator* m_generator = nullptr;
     qint32 m_countOfBytes;
+    IProtocol* m_protocol = nullptr;
 };
 
 #endif // CLIENT_H
