@@ -5,19 +5,23 @@ PackageParserForInt64::PackageParserForInt64() {}
 
 PackageParserForInt64::~PackageParserForInt64() {}
 
-void PackageParserForInt64::parseAndPrintPackage(QByteArray data, qint32 clientId) {
+void PackageParserForInt64::parseAndPrintPackage(QByteArray data, qint32 clientId)
+{
+  m_buffer.append(data);
+  const qint64* sinus = reinterpret_cast<const qint64*>(m_buffer.constData());
 
-    m_buffer.append(data);
-    const qint64* sinus = reinterpret_cast<const qint64*>(m_buffer.constData());
+  qint32 count = m_buffer.size() / sizeof(qint64);
 
-    qint32 count = m_buffer.size() / sizeof(qint64);
+  QString str;
+  for (int i = 0; i < count; ++i)
+  {
+    str += QString::number(float(sinus[i]) /
+                           float(std::numeric_limits<qint64>::max())) +
+           ", ";
+  }
 
-    QString str;
-    for (int i = 0; i < count; ++i) {
-        str += QString::number(float(sinus[i]) / float(std::numeric_limits<qint64>::max())) + ", ";
-    }
+  qDebug() << "Server received:" << str << "from Client" << clientId << "\n"
+           << "\n";
 
-    qDebug() << "Server received:" << str << "from Client" << clientId << "\n" << "\n";
-
-    m_buffer.remove(0, count * sizeof(qint64));
+  m_buffer.remove(0, count * sizeof(qint64));
 }

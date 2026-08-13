@@ -1,27 +1,30 @@
 #ifndef IPROTOCOL_H
 #define IPROTOCOL_H
-#include <QByteArray>
-#include <QString>
-#include <QDebug>
-#include "Package.h"
 
-enum class ProtocolDataType {
-    JsonType = 0,
-    BinType,
-    XmlType,
-    Count
+#include "Package.h"
+#include <QByteArray>
+#include <QDebug>
+#include <QString>
+
+enum class ProtocolDataType
+{
+  JsonType = 0,
+  BinType,
+  XmlType,
+  Count
 };
 
-class IProtocol {
+class IProtocol
+{
 public:
-    virtual ~IProtocol() = default;
+  virtual ~IProtocol() = default;
 
-    static IProtocol* makeProtocol(ProtocolDataType type);
-    static IProtocol* makeProtocol(QString type);
-    virtual QByteArray encodeData(Package* pack) = 0;
-    virtual Package* decodeData() = 0;
+  static IProtocol* makeProtocol(ProtocolDataType type);
+  static IProtocol* makeProtocol(QString type);
+  virtual QByteArray encodeData(Package* pack) = 0;
+  virtual Package* decodeData() = 0;
 
-    QByteArray m_buffer;
+  QByteArray m_buffer;
 };
 
 #endif // IPROTOCOL_H

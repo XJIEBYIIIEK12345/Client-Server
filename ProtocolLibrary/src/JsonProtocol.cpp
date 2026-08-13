@@ -1,5 +1,4 @@
 #include "JsonProtocol.h"
-#include "IProtocol.h"
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
@@ -8,33 +7,33 @@ JsonProtocol::JsonProtocol() {}
 
 JsonProtocol::~JsonProtocol() {}
 
-QByteArray JsonProtocol::encodeData(Package* pack) {
+QByteArray JsonProtocol::encodeData(Package* pack)
+{
+  QJsonObject jsonObj = {{"count", pack->m_count},
+                         {"type", pack->m_type},
+                         {"data", QString(pack->m_data.toBase64())}};
 
-    QJsonObject jsonObj = {
-        {"count", pack->m_count},
-        {"type", pack->m_type},
-        {"data", QString(pack->m_data.toBase64())}
-    };
+  QJsonDocument jsonDoc(jsonObj);
+  QByteArray data = jsonDoc.toJson();
 
-    QJsonDocument jsonDoc(jsonObj);
-    QByteArray data = jsonDoc.toJson();
-
-    return data;
+  return data;
 }
 
-Package* JsonProtocol::decodeData() {
+Package* JsonProtocol::decodeData()
+{
+  QJsonParseError* err = nullptr;
 
-    QJsonParseError* err = nullptr;
+  QJsonObject jsonObj = QJsonDocument::fromJson(m_buffer, err).object();
 
-    QJsonObject jsonObj = QJsonDocument::fromJson(m_buffer, err).object();
+  if (err == nullptr)
+  {
 
-    if (err == nullptr) {
+    Package* pack =
+        new Package(jsonObj["count"].toInt(), jsonObj["type"].toString(),
+                    QByteArray::fromBase64(jsonObj["data"].toString().toUtf8()));
 
-        Package* pack = new Package(
-            jsonObj["count"].toInt(), jsonObj["type"].toString(), QByteArray::fromBase64(jsonObj["data"].toString().toUtf8()));
-
-        return pack;
-    }
-    else return nullptr;
+    return pack;
+  }
+  else
+    return nullptr;
 }
-
