@@ -88,12 +88,14 @@ void Server::parseMessageFromClient()
   if (packFromClient != nullptr)
   {
     qint32 count = packFromClient->m_count;
-    QString type = packFromClient->m_type;
+    MessageType type = packFromClient->m_type;
     QByteArray data = packFromClient->m_data;
 
     QRandomGenerator* randomGenerator = QRandomGenerator::global();
 
-    if (type == "connection" && data == "Hello")
+    switch (type)
+    {
+    case MessageType::Connection:
     {
       PackageParserType packageParserType = PackageParserType(
           randomGenerator->bounded(0, int(PackageParserType::Count) - 1));
@@ -104,7 +106,8 @@ void Server::parseMessageFromClient()
 
       quint32 bytes = randomGenerator->bounded(0, 100000);
 
-      Package* packFromServer = new Package(bytes, "sinRequest", valueType.toUtf8());
+      Package* packFromServer =
+          new Package(bytes, MessageType::SinRequest, valueType.toUtf8());
 
       QByteArray messageFromServer =
           m_connectedClients[dataSender].m_clientProtocol->encodeData(
@@ -121,13 +124,15 @@ void Server::parseMessageFromClient()
 
       dataSender->write(messageFromServer);
     }
-    else if (type == "sinAnswer")
+    break;
+    case MessageType::SinAnswer:
     {
       if (count <= data.size())
       {
         QByteArray ok = "ok";
 
-        Package* packFromServer = new Package(ok.size(), "sinConfirmation", ok);
+        Package* packFromServer =
+            new Package(ok.size(), MessageType::SinConfirmation, ok);
         QByteArray messageFromServer =
             m_connectedClients[dataSender].m_clientProtocol->encodeData(
                 packFromServer);
@@ -146,6 +151,10 @@ void Server::parseMessageFromClient()
         m_connectedClients[dataSender].m_parser->parseAndPrintPackage(
             data, m_connectedClients[dataSender].m_id);
       }
+    }
+    break;
+    default:
+      qDebug() << "Unable to process this type of message:" << type;
     }
   }
 }

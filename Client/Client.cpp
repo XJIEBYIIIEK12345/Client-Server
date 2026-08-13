@@ -60,7 +60,7 @@ void Client::sendHelloToServer()
   qDebug() << "Connected to server";
 
   QByteArray data = "Hello";
-  Package* pack = new Package(data.size(), "connection", data);
+  Package* pack = new Package(data.size(), MessageType::Connection, data);
 
   QByteArray message = m_protocol->encodeData(pack);
 
@@ -99,7 +99,7 @@ void Client::readDataFromServer()
   if (pack != nullptr)
   {
     qint32 count = pack->m_count;
-    QString type = pack->m_type;
+    MessageType type = pack->m_type;
     QByteArray data = pack->m_data;
 
     if (m_protocol->m_buffer.size() != 0)
@@ -110,7 +110,9 @@ void Client::readDataFromServer()
       pack = nullptr;
     }
 
-    if (type == "sinRequest")
+    switch (type)
+    {
+    case MessageType::SinRequest:
     {
       m_countOfBytes = count;
       m_generator = SineGenerator::makeGenerator(QString(data));
@@ -120,12 +122,17 @@ void Client::readDataFromServer()
         m_timerIdForSend = startTimer(2500);
       }
     }
-    else if (type == "sinConfirmation" && data == "ok")
+    break;
+    case MessageType::SinConfirmation:
     {
       if (m_timerIdForSend == 0)
       {
         m_timerIdForSend = startTimer(2500);
       }
+    }
+    break;
+    default:
+      qDebug() << "Unable to process this type of message:" << type;
     }
   }
 }
@@ -139,7 +146,7 @@ void Client::sendPackageToServer()
   }
   QByteArray data = m_generator->generateSineForType(m_countOfBytes);
 
-  Package* pack = new Package(m_countOfBytes, "sinAnswer", data);
+  Package* pack = new Package(m_countOfBytes, MessageType::SinAnswer, data);
   QByteArray message = m_protocol->encodeData(pack);
 
   qDebug() << this << "send: " << data;

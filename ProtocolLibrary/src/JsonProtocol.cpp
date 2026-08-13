@@ -10,7 +10,7 @@ JsonProtocol::~JsonProtocol() {}
 QByteArray JsonProtocol::encodeData(Package* pack)
 {
   QJsonObject jsonObj = {{"count", pack->m_count},
-                         {"type", pack->m_type},
+                         {"type", int(pack->m_type)},
                          {"data", QString(pack->m_data.toBase64())}};
 
   QJsonDocument jsonDoc(jsonObj);
@@ -28,7 +28,7 @@ Package* JsonProtocol::decodeData()
   if (err == nullptr)
   {
     Package* pack =
-        new Package(jsonObj["count"].toInt(), jsonObj["type"].toString(),
+        new Package(jsonObj["count"].toInt(), MessageType(jsonObj["type"].toInt()),
                     QByteArray::fromBase64(jsonObj["data"].toString().toUtf8()));
 
     return pack;
