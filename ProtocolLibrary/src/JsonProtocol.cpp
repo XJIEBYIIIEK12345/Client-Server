@@ -27,7 +27,6 @@ Package* JsonProtocol::decodeData()
 
   if (err == nullptr)
   {
-
     Package* pack =
         new Package(jsonObj["count"].toInt(), jsonObj["type"].toString(),
                     QByteArray::fromBase64(jsonObj["data"].toString().toUtf8()));

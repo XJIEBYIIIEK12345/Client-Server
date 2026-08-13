@@ -81,6 +81,7 @@ void Server::parseMessageFromClient()
 
   m_connectedClients[dataSender].m_clientProtocol->m_buffer.append(
       dataSender->readAll());
+
   Package* packFromClient =
       m_connectedClients[dataSender].m_clientProtocol->decodeData();
 
@@ -89,14 +90,6 @@ void Server::parseMessageFromClient()
     qint32 count = packFromClient->m_count;
     QString type = packFromClient->m_type;
     QByteArray data = packFromClient->m_data;
-
-    if (m_connectedClients[dataSender].m_clientProtocol->m_buffer.size() != 0)
-      m_connectedClients[dataSender].m_clientProtocol->m_buffer.clear();
-    if (packFromClient != nullptr)
-    {
-      delete packFromClient;
-      packFromClient = nullptr;
-    }
 
     QRandomGenerator* randomGenerator = QRandomGenerator::global();
 
@@ -109,13 +102,22 @@ void Server::parseMessageFromClient()
       m_connectedClients[dataSender].m_parser =
           PackageParser::makeParser(packageParserType);
 
-      quint32 bytes = randomGenerator->bounded(0, 1000);
+      quint32 bytes = randomGenerator->bounded(0, 100000);
 
       Package* packFromServer = new Package(bytes, "sinRequest", valueType.toUtf8());
 
       QByteArray messageFromServer =
           m_connectedClients[dataSender].m_clientProtocol->encodeData(
               packFromServer);
+
+      if (m_connectedClients[dataSender].m_clientProtocol->m_buffer.size() != 0)
+        m_connectedClients[dataSender].m_clientProtocol->m_buffer.clear();
+
+      if (packFromClient != nullptr)
+      {
+        delete packFromClient;
+        packFromClient = nullptr;
+      }
 
       dataSender->write(messageFromServer);
     }
@@ -131,6 +133,16 @@ void Server::parseMessageFromClient()
                 packFromServer);
 
         dataSender->write(messageFromServer);
+
+        if (m_connectedClients[dataSender].m_clientProtocol->m_buffer.size() != 0)
+          m_connectedClients[dataSender].m_clientProtocol->m_buffer.clear();
+
+        if (packFromClient != nullptr)
+        {
+          delete packFromClient;
+          packFromClient = nullptr;
+        }
+
         m_connectedClients[dataSender].m_parser->parseAndPrintPackage(
             data, m_connectedClients[dataSender].m_id);
       }

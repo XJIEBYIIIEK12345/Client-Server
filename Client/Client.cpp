@@ -139,7 +139,7 @@ void Client::sendPackageToServer()
   }
   QByteArray data = m_generator->generateSineForType(m_countOfBytes);
 
-  Package* pack = new Package(data.size(), "sinAnswer", data);
+  Package* pack = new Package(m_countOfBytes, "sinAnswer", data);
   QByteArray message = m_protocol->encodeData(pack);
 
   qDebug() << this << "send: " << data;
