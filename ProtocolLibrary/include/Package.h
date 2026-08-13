@@ -1,7 +1,10 @@
 #ifndef PACKAGE_H
 #define PACKAGE_H
+
 #include <QString>
+
 class Package {
+
 public:
     Package();
     Package(qint32 count, QString type, QByteArray data);
