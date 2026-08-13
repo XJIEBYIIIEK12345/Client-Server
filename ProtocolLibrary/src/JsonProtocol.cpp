@@ -8,13 +8,12 @@ JsonProtocol::JsonProtocol() {}
 
 JsonProtocol::~JsonProtocol() {}
 
-QByteArray JsonProtocol::encodeData() {
+QByteArray JsonProtocol::encodeData(Package* pack) {
 
     QJsonObject jsonObj = {
-        {"count", m_package.count},
-        {"type", m_package.type},
-        //{"data", QString(m_package.data)}
-        {"data", QString(m_package.data.toBase64())}
+        {"count", pack->m_count},
+        {"type", pack->m_type},
+        {"data", QString(pack->m_data.toBase64())}
     };
 
     QJsonDocument jsonDoc(jsonObj);
@@ -23,19 +22,19 @@ QByteArray JsonProtocol::encodeData() {
     return data;
 }
 
-bool JsonProtocol::decodeData() {
+Package* JsonProtocol::decodeData() {
 
     QJsonParseError* err = nullptr;
 
     QJsonObject jsonObj = QJsonDocument::fromJson(m_buffer, err).object();
 
     if (err == nullptr) {
-        m_package.count = jsonObj["count"].toInt();
-        m_package.type = jsonObj["type"].toString();
-        //m_package.data = jsonObj["data"].toString().toUtf8();
-        m_package.data = QByteArray::fromBase64(jsonObj["data"].toString().toUtf8());
 
-        return true;
+        Package* pack = new Package(
+            jsonObj["count"].toInt(), jsonObj["type"].toString(), QByteArray::fromBase64(jsonObj["data"].toString().toUtf8()));
+
+        return pack;
     }
-    else return false;
+    else return nullptr;
 }
+

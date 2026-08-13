@@ -51,9 +51,9 @@ void Client::sendHelloToServer() {
     qDebug() << "Connected to server";
 
     QByteArray data = "Hello";
-    m_protocol->m_package.setPackageData(data.size(), "connection", data);
+    Package* pack = new Package(data.size(), "connection", data);
 
-    QByteArray message = m_protocol->encodeData();
+    QByteArray message = m_protocol->encodeData(pack);
 
     m_socket->write(message);
 }
@@ -82,18 +82,22 @@ void Client::readDataFromServer() {
     QByteArray message = m_socket->readAll();
     m_protocol->m_buffer.append(message);
 
-    if (m_protocol->decodeData()) {
+    Package* pack = m_protocol->decodeData();
 
-        qint32 count = m_protocol->m_package.count;
-        QString type = m_protocol->m_package.type;
-        QByteArray data = m_protocol->m_package.data;
+    if (pack != nullptr) {
+
+        qint32 count = pack->m_count;
+        QString type = pack->m_type;
+        QByteArray data = pack->m_data;
 
         if (m_protocol->m_buffer.size() != 0)
             m_protocol->m_buffer.clear();
+        if (pack != nullptr) {
+            delete pack;
+            pack = nullptr;
+        }
 
         if (type == "sinRequest") {
-
-            //qDebug() << QString(data);
 
             m_countOfBytes = count;
             m_generator = SineGenerator::makeGenerator(QString(data));
@@ -118,12 +122,17 @@ void Client::sendPackageToServer() {
     }
     QByteArray data = m_generator->generateSineForType(m_countOfBytes);
 
-    m_protocol->m_package.setPackageData(data.size(), "sinAnswer", data);
-    QByteArray message = m_protocol->encodeData();
+    Package* pack = new Package(data.size(), "sinAnswer", data);
+    QByteArray message = m_protocol->encodeData(pack);
 
     qDebug() << this << "send: " << data;
 
     m_socket->write(message);
+
+    if (pack != nullptr) {
+        delete pack;
+        pack = nullptr;
+    }
 
     if (!m_socket->waitForReadyRead(10000)) {
         m_socket->close();

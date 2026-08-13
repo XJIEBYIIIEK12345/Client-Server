@@ -9,8 +9,8 @@ public:
     JsonProtocol();
     ~JsonProtocol();
 
-    QByteArray encodeData() override;
-    bool decodeData() override;
+    QByteArray encodeData(Package* pack) override;
+    Package* decodeData() override;
 };
 
 #endif // JSONPROTOCOL_H

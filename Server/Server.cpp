@@ -62,17 +62,21 @@ void Server::parseMessageFromClient() {
     QTcpSocket* dataSender = qobject_cast<QTcpSocket*>(sender());
     if (!dataSender) return;
 
-    //QByteArray messageFromClient = dataSender->readAll();
     m_connectedClients[dataSender].m_clientProtocol->m_buffer.append(dataSender->readAll());
+    Package* packFromClient = m_connectedClients[dataSender].m_clientProtocol->decodeData();
 
-    if (m_connectedClients[dataSender].m_clientProtocol->decodeData()) {
+    if (packFromClient != nullptr) {
 
-        qint32 count = m_connectedClients[dataSender].m_clientProtocol->m_package.count;
-        QString type = m_connectedClients[dataSender].m_clientProtocol->m_package.type;
-        QByteArray data = m_connectedClients[dataSender].m_clientProtocol->m_package.data;
+        qint32 count = packFromClient->m_count;
+        QString type = packFromClient->m_type;
+        QByteArray data = packFromClient->m_data;
 
         if (m_connectedClients[dataSender].m_clientProtocol->m_buffer.size() != 0)
             m_connectedClients[dataSender].m_clientProtocol->m_buffer.clear();
+        if (packFromClient != nullptr) {
+            delete packFromClient;
+            packFromClient = nullptr;
+        }
 
         QRandomGenerator randomGenerator;
 
@@ -85,12 +89,9 @@ void Server::parseMessageFromClient() {
 
             quint32 bytes = randomGenerator.bounded(0, 1000);
 
-            qDebug() << bytes << m_connectedClients[dataSender].m_id;
+            Package* packFromServer = new Package(bytes, "sinRequest", valueType.toUtf8());
 
-            //m_connectedClients[dataSender].m_clientProtocol->m_package.setPackageData(bytes, "sinRequest", valueType.toUtf8());
-            m_connectedClients[dataSender].m_clientProtocol->m_package.setPackageData(bytes, "sinRequest", valueType.toUtf8());
-
-            QByteArray messageFromServer = m_connectedClients[dataSender].m_clientProtocol->encodeData();
+            QByteArray messageFromServer = m_connectedClients[dataSender].m_clientProtocol->encodeData(packFromServer);
 
             dataSender->write(messageFromServer);
         }
@@ -100,8 +101,8 @@ void Server::parseMessageFromClient() {
 
                 QByteArray ok = "ok";
 
-                m_connectedClients[dataSender].m_clientProtocol->m_package.setPackageData(ok.size(), "sinConfirmation", ok);
-                QByteArray messageFromServer = m_connectedClients[dataSender].m_clientProtocol->encodeData();
+                Package* packFromServer = new Package(ok.size(), "sinConfirmation", ok);
+                QByteArray messageFromServer = m_connectedClients[dataSender].m_clientProtocol->encodeData(packFromServer);
 
                 dataSender->write(messageFromServer);
                 m_connectedClients[dataSender].m_parser->parseAndPrintPackage(data, m_connectedClients[dataSender].m_id);

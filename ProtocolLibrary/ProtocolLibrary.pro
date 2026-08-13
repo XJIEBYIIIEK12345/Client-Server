@@ -15,6 +15,7 @@ INCLUDEPATH += $$PWD/src
 SOURCES += \
     src/IProtocol.cpp \
     src/JsonProtocol.cpp \
+    src/Package.cpp \
     src/PackageParser.cpp \
     src/SineGenerator.cpp \
     src/SineGeneratorForDouble.cpp \
@@ -31,6 +32,7 @@ SOURCES += \
 HEADERS += \
     include/IProtocol.h \
     include/JsonProtocol.h \
+    include/Package.h \
     include/PackageType.h \
     include/SineGenerator.h \
     include/SineGeneratorForDouble.h \

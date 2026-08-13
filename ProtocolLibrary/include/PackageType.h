@@ -23,29 +23,4 @@ inline QDataStream &operator<<(QDataStream &out, const PackageTypeToClient& pack
     return out;
 }
 
-QJsonObject createJsonObject(qint32 count, const QString& type, const QByteArray& data) {
-
-    QJsonObject message = {
-        {"count", count},
-        {"type", type},
-        {"data", QString(data.toBase64())}
-    };
-
-    return message;
-}
-
-QByteArray jsonObjToByteArray(QJsonObject jsonObj) {
-
-    QJsonDocument jsonDoc(jsonObj);
-    QByteArray data = jsonDoc.toJson();
-
-    return data;
-}
-
-QJsonObject byteArrayToJsonObj(const QByteArray& data) {
-
-    QJsonObject message = QJsonDocument::fromJson(data).object();
-    return message;
-}
-
 #endif // PACKAGETYPE_H
