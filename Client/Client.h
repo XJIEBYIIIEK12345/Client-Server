@@ -16,12 +16,13 @@ public:
   explicit Client(QString address, quint16 port, QString protocol,
                   QObject* parent = nullptr);
   ~Client();
-  void init();
+  void connect();
 
 private slots:
   void sendHelloToServer();
   void startReconnectTimer();
   void readDataFromServer();
+  void closeSocket();
 
 protected:
   void sendPackageToServer();

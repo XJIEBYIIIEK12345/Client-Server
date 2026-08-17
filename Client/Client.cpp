@@ -23,7 +23,7 @@ Client::Client(QString address, quint16 port, QString protocol, QObject* parent)
 
 Client::~Client() {}
 
-void Client::init()
+void Client::connect()
 {
   m_socket = new QTcpSocket(this);
   QTcpSocket::connect(m_socket, &QTcpSocket::readyRead, this,
@@ -32,8 +32,10 @@ void Client::init()
                       &Client::startReconnectTimer);
   QTcpSocket::connect(m_socket, &QTcpSocket::connected, this,
                       &Client::sendHelloToServer);
+  QTcpSocket::connect(m_socket, &QTcpSocket::errorOccurred, this,
+                      &Client::closeSocket);
 
-  m_timerIdForReconnect = startTimer(5000);
+  m_timerIdForReconnect = startTimer(1);
 }
 
 void Client::sendHelloToServer()
@@ -60,9 +62,9 @@ void Client::sendHelloToServer()
   qDebug() << "Connected to server";
 
   QByteArray data = "Hello";
-  Package* pack = new Package(data.size(), MessageType::Connection, data);
 
-  QByteArray message = m_protocol->encodeData(pack);
+  QByteArray message = m_protocol->generateMessage(
+      data.size(), MessageType::BytesAndTypeRequest, data);
 
   m_socket->write(message);
 }
@@ -98,24 +100,15 @@ void Client::readDataFromServer()
 
   if (pack != nullptr)
   {
-    qint32 count = pack->m_count;
-    MessageType type = pack->m_type;
-    QByteArray data = pack->m_data;
-
     if (m_protocol->m_buffer.size() != 0)
       m_protocol->m_buffer.clear();
-    if (pack != nullptr)
-    {
-      delete pack;
-      pack = nullptr;
-    }
 
-    switch (type)
+    switch (pack->m_type)
     {
     case MessageType::SinRequest:
     {
-      m_countOfBytes = count;
-      m_generator = SineGenerator::makeGenerator(QString(data));
+      m_countOfBytes = pack->m_count;
+      m_generator = SineGenerator::makeGenerator(QString::fromUtf8(pack->m_data));
 
       if (m_timerIdForSend == 0)
       {
@@ -132,9 +125,20 @@ void Client::readDataFromServer()
     }
     break;
     default:
-      qDebug() << "Unable to process this type of message:" << type;
+      qDebug() << "Unable to process this type of message:" << pack->m_type;
     }
   }
+  if (pack != nullptr)
+  {
+    delete pack;
+    pack = nullptr;
+  }
+}
+
+void Client::closeSocket()
+{
+  qDebug() << "Unknown error";
+  m_socket->close();
 }
 
 void Client::sendPackageToServer()
@@ -146,18 +150,12 @@ void Client::sendPackageToServer()
   }
   QByteArray data = m_generator->generateSineForType(m_countOfBytes);
 
-  Package* pack = new Package(m_countOfBytes, MessageType::SinAnswer, data);
-  QByteArray message = m_protocol->encodeData(pack);
+  QByteArray message =
+      m_protocol->generateMessage(m_countOfBytes, MessageType::SinAnswer, data);
 
   qDebug() << this << "send: " << data;
 
   m_socket->write(message);
-
-  if (pack != nullptr)
-  {
-    delete pack;
-    pack = nullptr;
-  }
 
   if (!m_socket->waitForReadyRead(10000))
   {

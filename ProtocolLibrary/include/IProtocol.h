@@ -24,6 +24,9 @@ public:
   virtual QByteArray encodeData(Package* pack) = 0;
   virtual Package* decodeData() = 0;
 
+  virtual QByteArray generateMessage(qint32 count, MessageType type,
+                                     QByteArray data) = 0;
+
   QByteArray m_buffer;
 };
 

@@ -5,7 +5,7 @@
 
 enum MessageType
 {
-  Connection = 0,
+  BytesAndTypeRequest = 0,
   SinRequest,
   SinAnswer,
   SinConfirmation,

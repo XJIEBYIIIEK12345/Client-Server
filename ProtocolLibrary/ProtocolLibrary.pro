@@ -33,7 +33,7 @@ HEADERS += \
     include/IProtocol.h \
     include/JsonProtocol.h \
     include/Package.h \
-    include/PackageType.h \
+    include/PackageWithStruct.h \
     include/SineGenerator.h \
     include/SineGeneratorForDouble.h \
     include/SineGeneratorForFloat.h \

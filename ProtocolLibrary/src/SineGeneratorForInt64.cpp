@@ -41,7 +41,6 @@ QByteArray SineGeneratorForInt64::generateSineForType(quint32 countOfBytes)
   quint32 tempBytes = 0;
   while (tempBytes < countOfBytes)
   {
-
     quint32 bytesLeft = countOfBytes - tempBytes;
     quint32 bytesAvailable = m_block.size() / size - m_lastSinePositionInSinusArray;
     quint32 chunk = qMin(bytesLeft, bytesAvailable);

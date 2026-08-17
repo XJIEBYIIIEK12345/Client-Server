@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
   else
   {
     Client client(address, port, protocol);
-    client.init();
+    client.connect();
 
     return a.exec();
   }

@@ -87,16 +87,12 @@ void Server::parseMessageFromClient()
 
   if (packFromClient != nullptr)
   {
-    qint32 count = packFromClient->m_count;
-    MessageType type = packFromClient->m_type;
-    QByteArray data = packFromClient->m_data;
-
-    QRandomGenerator* randomGenerator = QRandomGenerator::global();
-
-    switch (type)
+    switch (packFromClient->m_type)
     {
-    case MessageType::Connection:
+    case MessageType::BytesAndTypeRequest:
     {
+      QRandomGenerator* randomGenerator = QRandomGenerator::global();
+
       PackageParserType packageParserType = PackageParserType(
           randomGenerator->bounded(0, int(PackageParserType::Count) - 1));
 
@@ -106,56 +102,45 @@ void Server::parseMessageFromClient()
 
       quint32 bytes = randomGenerator->bounded(0, 100000);
 
-      Package* packFromServer =
-          new Package(bytes, MessageType::SinRequest, valueType.toUtf8());
-
       QByteArray messageFromServer =
-          m_connectedClients[dataSender].m_clientProtocol->encodeData(
-              packFromServer);
+          m_connectedClients[dataSender].m_clientProtocol->generateMessage(
+              bytes, MessageType::SinRequest, valueType.toUtf8());
 
       if (m_connectedClients[dataSender].m_clientProtocol->m_buffer.size() != 0)
         m_connectedClients[dataSender].m_clientProtocol->m_buffer.clear();
-
-      if (packFromClient != nullptr)
-      {
-        delete packFromClient;
-        packFromClient = nullptr;
-      }
 
       dataSender->write(messageFromServer);
     }
     break;
     case MessageType::SinAnswer:
     {
-      if (count <= data.size())
+      if (packFromClient->m_count <= packFromClient->m_data.size())
       {
         QByteArray ok = "ok";
 
-        Package* packFromServer =
-            new Package(ok.size(), MessageType::SinConfirmation, ok);
         QByteArray messageFromServer =
-            m_connectedClients[dataSender].m_clientProtocol->encodeData(
-                packFromServer);
+            m_connectedClients[dataSender].m_clientProtocol->generateMessage(
+                ok.size(), MessageType::SinConfirmation, ok);
 
         dataSender->write(messageFromServer);
 
         if (m_connectedClients[dataSender].m_clientProtocol->m_buffer.size() != 0)
           m_connectedClients[dataSender].m_clientProtocol->m_buffer.clear();
 
-        if (packFromClient != nullptr)
-        {
-          delete packFromClient;
-          packFromClient = nullptr;
-        }
-
         m_connectedClients[dataSender].m_parser->parseAndPrintPackage(
-            data, m_connectedClients[dataSender].m_id);
+            packFromClient->m_data, m_connectedClients[dataSender].m_id);
       }
     }
     break;
     default:
-      qDebug() << "Unable to process this type of message:" << type;
+      qDebug() << "Unable to process this type of message:"
+               << packFromClient->m_type;
     }
+  }
+  if (packFromClient != nullptr)
+  {
+    delete packFromClient;
+    packFromClient = nullptr;
   }
 }
 

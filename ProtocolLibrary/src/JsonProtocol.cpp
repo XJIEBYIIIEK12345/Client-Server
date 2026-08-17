@@ -36,3 +36,13 @@ Package* JsonProtocol::decodeData()
   else
     return nullptr;
 }
+
+QByteArray JsonProtocol::generateMessage(qint32 count, MessageType type,
+                                         QByteArray data)
+{
+  Package pack(count, type, data);
+
+  QByteArray message = encodeData(&pack);
+
+  return message;
+}
