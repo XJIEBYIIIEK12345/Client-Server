@@ -1,35 +1,41 @@
 #include "Package.h"
 
 Package::Package()
-  : m_count(0)
+  : m_id(0)
 {}
 
-Package::Package(qint32 count, MessageType type, QByteArray data)
+Package::Package(qint32 id, MessageType type)
 {
-  m_count = count;
+  m_id = id;
   m_type = type;
-  m_data = data;
 }
 
-Package::Package(const Package& package)
+Package::Package(const Package& pack)
 {
-  m_count = package.m_count;
-  m_type = package.m_type;
-  m_data = package.m_data;
+  m_id = pack.m_id;
+  m_type = pack.m_type;
 }
 
 Package::~Package() {}
 
-void Package::setPackageData(qint32 count, MessageType type, QByteArray data)
+void Package::setPackageData(qint32 id, MessageType type)
 {
-  m_count = count;
+  m_id = id;
   m_type = type;
-  m_data = data;
 }
 
-void Package::setPackageData(const Package& package)
+void Package::setPackageData(const Package& pack)
 {
-  m_count = package.m_count;
-  m_type = package.m_type;
-  m_data = package.m_data;
+  m_id = pack.m_id;
+  m_type = pack.m_type;
+}
+
+QMap<QString, QVariant> Package::valuesToMap() const
+{
+  QMap<QString, QVariant> map;
+
+  map.insert("id", m_id);
+  map.insert("type", m_type);
+
+  return map;
 }

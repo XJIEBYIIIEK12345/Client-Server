@@ -20,6 +20,8 @@ HEADERS += \
     Client.h \
 
 INCLUDEPATH += $$PWD/../ProtocolLibrary/include
+INCLUDEPATH += $$PWD/../ProtocolLibrary/include/SineGenerator
+INCLUDEPATH += $$PWD/../ProtocolLibrary/include/PackageParser
 
 LIBS += -L$$OUT_PWD/../ProtocolLibrary -lProtocolLibrary
 

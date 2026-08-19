@@ -12,9 +12,6 @@ public:
 
   QByteArray encodeData(Package* pack) override;
   Package* decodeData() override;
-
-  QByteArray generateMessage(qint32 count, MessageType type,
-                             QByteArray data) override;
 };
 
 #endif // JSONPROTOCOL_H

@@ -7,6 +7,10 @@ CONFIG += c++17
 
 INCLUDEPATH += $$PWD/include
 INCLUDEPATH += $$PWD/src
+INCLUDEPATH += $$PWD/include/SineGenerator
+INCLUDEPATH += $$PWD/src/SineGenerator
+INCLUDEPATH += $$PWD/include/PackageParser
+INCLUDEPATH += $$PWD/src/PackageParser
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -16,36 +20,41 @@ SOURCES += \
     src/IProtocol.cpp \
     src/JsonProtocol.cpp \
     src/Package.cpp \
-    src/PackageParser.cpp \
-    src/SineGenerator.cpp \
-    src/SineGeneratorForDouble.cpp \
-    src/SineGeneratorForFloat.cpp \
-    src/SineGeneratorForInt16.cpp \
-    src/SineGeneratorForInt32.cpp \
-    src/SineGeneratorForInt64.cpp \
-    src/PackageParserForDouble.cpp \
-    src/PackageParserForFloat.cpp \
-    src/PackageParserForInt16.cpp \
-    src/PackageParserForInt32.cpp \
-    src/PackageParserForInt64.cpp
+    src/PackageForDataToGenerate.cpp \
+    src/PackageForGeneratedData.cpp \
+    src/PackageForSignal.cpp \
+    src/PackageParser/PackageParser.cpp \
+    src/PackageParser/PackageParserForDouble.cpp \
+    src/PackageParser/PackageParserForFloat.cpp \
+    src/PackageParser/PackageParserForInt16.cpp \
+    src/PackageParser/PackageParserForInt32.cpp \
+    src/PackageParser/PackageParserForInt64.cpp \
+    src/SineGenerator/SineGenerator.cpp \
+    src/SineGenerator/SineGeneratorForDouble.cpp \
+    src/SineGenerator/SineGeneratorForFloat.cpp \
+    src/SineGenerator/SineGeneratorForInt16.cpp \
+    src/SineGenerator/SineGeneratorForInt32.cpp \
+    src/SineGenerator/SineGeneratorForInt64.cpp \
 
 HEADERS += \
     include/IProtocol.h \
     include/JsonProtocol.h \
     include/Package.h \
-    include/PackageWithStruct.h \
-    include/SineGenerator.h \
-    include/SineGeneratorForDouble.h \
-    include/SineGeneratorForFloat.h \
-    include/SineGeneratorForInt16.h \
-    include/SineGeneratorForInt32.h \
-    include/SineGeneratorForInt64.h \
-    include/PackageParser.h \
-    include/PackageParserForDouble.h \
-    include/PackageParserForFloat.h \
-    include/PackageParserForInt16.h \
-    include/PackageParserForInt32.h \
-    include/PackageParserForInt64.h
+    include/PackageForDataToGenerate.h \
+    include/PackageForGeneratedData.h \
+    include/PackageForSignal.h \
+    include/PackageParser/PackageParser.h \
+    include/PackageParser/PackageParserForDouble.h \
+    include/PackageParser/PackageParserForFloat.h \
+    include/PackageParser/PackageParserForInt16.h \
+    include/PackageParser/PackageParserForInt32.h \
+    include/PackageParser/PackageParserForInt64.h \
+    include/SineGenerator/SineGenerator.h \
+    include/SineGenerator/SineGeneratorForDouble.h \
+    include/SineGenerator/SineGeneratorForFloat.h \
+    include/SineGenerator/SineGeneratorForInt16.h \
+    include/SineGenerator/SineGeneratorForInt32.h \
+    include/SineGenerator/SineGeneratorForInt64.h \
 
 # Default rules for deployment.
 unix {

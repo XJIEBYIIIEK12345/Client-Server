@@ -20,6 +20,8 @@ HEADERS += \
     Server.h \
 
 INCLUDEPATH += $$PWD/../ProtocolLibrary/include
+INCLUDEPATH += $$PWD/../ProtocolLibrary/include/SineGenerator
+INCLUDEPATH += $$PWD/../ProtocolLibrary/include/PackageParser
 
 QMAKE_LFLAGS += -Wl,-rpath,$$OUT_PWD/../ProtocolLibrary
 

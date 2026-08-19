@@ -13,7 +13,7 @@ class Client : public QObject
   Q_OBJECT
 
 public:
-  explicit Client(QString address, quint16 port, QString protocol,
+  explicit Client(QString address, quint16 port, ProtocolDataType protocol,
                   QObject* parent = nullptr);
   ~Client();
   void connect();

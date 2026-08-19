@@ -24,7 +24,8 @@ class Server : public QTcpServer
   Q_OBJECT
 
 public:
-  explicit Server(quint16 port, QString protocol, QObject* parent = nullptr);
+  explicit Server(quint16 port, ProtocolDataType protocol,
+                  QObject* parent = nullptr);
 
 protected:
   void incomingConnection(qintptr socketDescriptor) override;
@@ -37,7 +38,7 @@ private slots:
 
 private:
   QMap<QTcpSocket*, ClientData> m_connectedClients;
-  QString m_serverProtocol;
+  ProtocolDataType m_serverProtocol;
 };
 
 #endif // SERVER_H

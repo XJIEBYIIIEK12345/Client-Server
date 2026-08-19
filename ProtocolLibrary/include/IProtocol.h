@@ -6,12 +6,11 @@
 #include <QDebug>
 #include <QString>
 
-enum class ProtocolDataType
+enum ProtocolDataType
 {
   JsonType = 0,
   BinType,
-  XmlType,
-  Count
+  XmlType
 };
 
 class IProtocol
@@ -21,11 +20,9 @@ public:
 
   static IProtocol* makeProtocol(ProtocolDataType type);
   static IProtocol* makeProtocol(QString type);
+  static QString toString(ProtocolDataType type);
   virtual QByteArray encodeData(Package* pack) = 0;
   virtual Package* decodeData() = 0;
-
-  virtual QByteArray generateMessage(qint32 count, MessageType type,
-                                     QByteArray data) = 0;
 
   QByteArray m_buffer;
 };

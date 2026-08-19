@@ -1,5 +1,9 @@
 #include "Client.h"
 #include "IProtocol.h"
+#include "Package.h"
+#include "PackageForDataToGenerate.h"
+#include "PackageForGeneratedData.h"
+#include "PackageForSignal.h"
 #include "SineGenerator.h"
 #include <QDataStream>
 #include <QIODevice>
@@ -9,7 +13,8 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 
-Client::Client(QString address, quint16 port, QString protocol, QObject* parent)
+Client::Client(QString address, quint16 port, ProtocolDataType protocol,
+               QObject* parent)
   : QObject(parent)
 {
   m_address = address;
@@ -18,7 +23,8 @@ Client::Client(QString address, quint16 port, QString protocol, QObject* parent)
 
   qDebug() << "Client is waiting for server on address:" << address
            << ", port:" << port;
-  qDebug() << "Client is working with" << protocol << "data format";
+  qDebug() << "Client is working with" << IProtocol::toString(protocol)
+           << "data format";
 }
 
 Client::~Client() {}
@@ -61,10 +67,8 @@ void Client::sendHelloToServer()
 
   qDebug() << "Connected to server";
 
-  QByteArray data = "Hello";
-
-  QByteArray message = m_protocol->generateMessage(
-      data.size(), MessageType::BytesAndTypeRequest, data);
+  Package* pack = new PackageForSignal(0, MessageType::MetaDataRequest, true);
+  QByteArray message = m_protocol->encodeData(pack);
 
   m_socket->write(message);
 }
@@ -94,21 +98,22 @@ void Client::startReconnectTimer()
 void Client::readDataFromServer()
 {
   QByteArray message = m_socket->readAll();
+
   m_protocol->m_buffer.append(message);
 
   Package* pack = m_protocol->decodeData();
 
   if (pack != nullptr)
   {
-    if (m_protocol->m_buffer.size() != 0)
-      m_protocol->m_buffer.clear();
-
     switch (pack->m_type)
     {
-    case MessageType::SinRequest:
+    case MessageType::MetaDataResponse:
     {
-      m_countOfBytes = pack->m_count;
-      m_generator = SineGenerator::makeGenerator(QString::fromUtf8(pack->m_data));
+      PackageForDataToGenerate* packageFromServer =
+          dynamic_cast<PackageForDataToGenerate*>(pack);
+
+      m_countOfBytes = packageFromServer->m_bytes;
+      m_generator = SineGenerator::makeGenerator(packageFromServer->m_valueType);
 
       if (m_timerIdForSend == 0)
       {
@@ -150,8 +155,8 @@ void Client::sendPackageToServer()
   }
   QByteArray data = m_generator->generateSineForType(m_countOfBytes);
 
-  QByteArray message =
-      m_protocol->generateMessage(m_countOfBytes, MessageType::SinAnswer, data);
+  Package* pack = new PackageForGeneratedData(1, MessageType::SinAnswer, data);
+  QByteArray message = m_protocol->encodeData(pack);
 
   qDebug() << this << "send: " << data;
 

@@ -7,7 +7,9 @@ int main(int argc, char* argv[])
 {
   QCoreApplication a(argc, argv);
 
-  QStringList protocols = {"json", "bin", "xml"};
+  QMap<QString, ProtocolDataType> protocols = {{"json", ProtocolDataType::JsonType},
+                                               {"bin", ProtocolDataType::BinType},
+                                               {"xml", ProtocolDataType::XmlType}};
 
   QCommandLineParser parser;
   parser.addHelpOption();
@@ -34,7 +36,7 @@ int main(int argc, char* argv[])
   }
   else
   {
-    Server server(port, protocol);
+    Server server(port, protocols[protocol]);
 
     return a.exec();
   }

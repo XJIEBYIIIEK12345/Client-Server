@@ -1,4 +1,7 @@
 #include "JsonProtocol.h"
+#include "PackageForDataToGenerate.h"
+#include "PackageForGeneratedData.h"
+#include "PackageForSignal.h"
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
@@ -9,40 +12,65 @@ JsonProtocol::~JsonProtocol() {}
 
 QByteArray JsonProtocol::encodeData(Package* pack)
 {
-  QJsonObject jsonObj = {{"count", pack->m_count},
-                         {"type", int(pack->m_type)},
-                         {"data", QString(pack->m_data.toBase64())}};
+  const char frontByte = 0x02;
+  const char endByte = 0x03;
+
+  QJsonObject jsonObj = QJsonObject::fromVariantMap(pack->valuesToMap());
 
   QJsonDocument jsonDoc(jsonObj);
   QByteArray data = jsonDoc.toJson();
+
+  data.prepend(frontByte);
+  data.append(endByte);
 
   return data;
 }
 
 Package* JsonProtocol::decodeData()
 {
+  const char frontByte = 0x02;
+  const char endByte = 0x03;
+
+  int frontByteIndex = m_buffer.indexOf(frontByte);
+  int endByteIndex = m_buffer.indexOf(endByte);
+  int count = endByteIndex - frontByteIndex;
+
+  if (frontByteIndex < 0 || endByteIndex < 0)
+  {
+    return nullptr;
+  }
   QJsonParseError* err = nullptr;
 
-  QJsonObject jsonObj = QJsonDocument::fromJson(m_buffer, err).object();
+  QByteArray tempBuffer;
+  tempBuffer.insert(frontByteIndex, m_buffer, count);
+  tempBuffer.remove(0, 1);
+
+  QJsonObject jsonObj = QJsonDocument::fromJson(tempBuffer, err).object();
+
+  m_buffer.remove(frontByteIndex, count + 1);
 
   if (err == nullptr)
   {
-    Package* pack =
-        new Package(jsonObj["count"].toInt(), MessageType(jsonObj["type"].toInt()),
-                    QByteArray::fromBase64(jsonObj["data"].toString().toUtf8()));
-
-    return pack;
+    switch (MessageType(jsonObj["type"].toInt()))
+    {
+    case MessageType::MetaDataRequest:
+      return new PackageForSignal(jsonObj.toVariantMap());
+      break;
+    case MessageType::MetaDataResponse:
+      return new PackageForDataToGenerate(jsonObj.toVariantMap());
+      break;
+    case MessageType::SinAnswer:
+      return new PackageForGeneratedData(jsonObj.toVariantMap());
+      break;
+    case MessageType::SinConfirmation:
+      return new PackageForSignal(jsonObj.toVariantMap());
+      break;
+    case MessageType::Count:
+      qDebug() << "This type of message is unsupported";
+      return nullptr;
+      break;
+    }
   }
   else
     return nullptr;
-}
-
-QByteArray JsonProtocol::generateMessage(qint32 count, MessageType type,
-                                         QByteArray data)
-{
-  Package pack(count, type, data);
-
-  QByteArray message = encodeData(&pack);
-
-  return message;
 }
