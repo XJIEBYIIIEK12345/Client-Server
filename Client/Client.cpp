@@ -37,19 +37,19 @@ void Client::connect()
   QTcpSocket::connect(m_socket, &QTcpSocket::disconnected, this,
                       &Client::startReconnectTimer);
   QTcpSocket::connect(m_socket, &QTcpSocket::connected, this,
-                      &Client::sendHelloToServer);
+                      &Client::initPackageSending);
   QTcpSocket::connect(m_socket, &QTcpSocket::errorOccurred, this,
                       &Client::closeSocket);
 
-  m_timerIdForReconnect = startTimer(1);
+  m_timerId = startTimer(1);
 }
 
-void Client::sendHelloToServer()
+void Client::initPackageSending()
 {
-  if (m_timerIdForReconnect != 0)
+  if (m_timerId != 0)
   {
-    killTimer(m_timerIdForReconnect);
-    m_timerIdForReconnect = 0;
+    killTimer(m_timerId);
+    m_timerId = 0;
   }
 
   int keepcnt = 3;
@@ -75,10 +75,10 @@ void Client::sendHelloToServer()
 
 void Client::startReconnectTimer()
 {
-  if (m_timerIdForSend != 0)
+  if (m_timerId != 0)
   {
-    killTimer(m_timerIdForSend);
-    m_timerIdForSend = 0;
+    killTimer(m_timerId);
+    m_timerId = 0;
   }
 
   qDebug() << "Disconnected from server";
@@ -89,9 +89,9 @@ void Client::startReconnectTimer()
     m_generator = nullptr;
   }
 
-  if (m_timerIdForReconnect == 0)
+  if (m_timerId == 0)
   {
-    m_timerIdForReconnect = startTimer(5000);
+    m_timerId = startTimer(5000);
   }
 }
 
@@ -112,20 +112,20 @@ void Client::readDataFromServer()
       PackageForDataToGenerate* packageFromServer =
           dynamic_cast<PackageForDataToGenerate*>(pack);
 
-      m_countOfBytes = packageFromServer->m_bytes;
       m_generator = SineGenerator::makeGenerator(packageFromServer->m_valueType);
+      m_generator->setCountOfBytes(packageFromServer->m_bytes);
 
-      if (m_timerIdForSend == 0)
+      if (m_timerId == 0)
       {
-        m_timerIdForSend = startTimer(2500);
+        m_timerId = startTimer(2500);
       }
     }
     break;
     case MessageType::SinConfirmation:
     {
-      if (m_timerIdForSend == 0)
+      if (m_timerId == 0)
       {
-        m_timerIdForSend = startTimer(2500);
+        m_timerId = startTimer(2500);
       }
     }
     break;
@@ -142,18 +142,18 @@ void Client::readDataFromServer()
 
 void Client::closeSocket()
 {
-  qDebug() << "Unknown error";
+  qDebug() << "Error:" << m_socket->errorString();
   m_socket->close();
 }
 
 void Client::sendPackageToServer()
 {
-  if (m_timerIdForSend != 0)
+  if (m_timerId != 0)
   {
-    killTimer(m_timerIdForSend);
-    m_timerIdForSend = 0;
+    killTimer(m_timerId);
+    m_timerId = 0;
   }
-  QByteArray data = m_generator->generateSineForType(m_countOfBytes);
+  QByteArray data = m_generator->generateSineForType();
 
   Package* pack = new PackageForGeneratedData(1, MessageType::SinAnswer, data);
   QByteArray message = m_protocol->encodeData(pack);
@@ -165,32 +165,32 @@ void Client::sendPackageToServer()
   if (!m_socket->waitForReadyRead(10000))
   {
     m_socket->close();
-    if (m_timerIdForReconnect == 0)
+
+    if (m_timerId == 0)
     {
-      m_timerIdForReconnect = startTimer(5000);
+      m_timerId = startTimer(5000);
     }
   }
 }
 
 void Client::connectToServer()
 {
-  if ((m_socket->state() != QAbstractSocket::ConnectedState) &&
-      (m_socket->state() != QAbstractSocket::ConnectingState))
-  {
-    qDebug() << "Connecting...";
-    m_socket->connectToHost(QHostAddress(m_address), m_port, QTcpSocket::ReadWrite);
-  }
+  qDebug() << "Connecting...";
+  m_socket->connectToHost(QHostAddress(m_address), m_port, QTcpSocket::ReadWrite);
 }
 
 void Client::timerEvent(QTimerEvent* event)
 {
-  if (event->timerId() == m_timerIdForReconnect)
+  if (event->timerId() == m_timerId)
   {
-    connectToServer();
-  }
-  else if (event->timerId() == m_timerIdForSend)
-  {
-    sendPackageToServer();
+    if (m_socket->state() == QAbstractSocket::ConnectedState)
+    {
+      sendPackageToServer();
+    }
+    else if (m_socket->state() != QAbstractSocket::ConnectingState)
+    {
+      connectToServer();
+    }
   }
   else
   {

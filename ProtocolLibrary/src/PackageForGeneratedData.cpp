@@ -16,8 +16,6 @@ PackageForGeneratedData::PackageForGeneratedData(qint32 id, MessageType type,
 PackageForGeneratedData::PackageForGeneratedData(const PackageForGeneratedData& pack)
   : Package(pack)
 {
-  // m_id = pack.m_id;
-  // m_type = pack.m_type;
   m_data = pack.m_data;
 }
 
@@ -25,7 +23,7 @@ PackageForGeneratedData::PackageForGeneratedData(const QVariantMap& map)
 {
   m_id = map["id"].toInt();
   m_type = MessageType(map["type"].toInt());
-  m_data = map["data"].toByteArray();
+  m_data = QByteArray::fromBase64(map["data"].toByteArray());
 }
 
 PackageForGeneratedData::~PackageForGeneratedData() {}
@@ -51,7 +49,7 @@ QMap<QString, QVariant> PackageForGeneratedData::valuesToMap() const
 {
   QMap<QString, QVariant> map = Package::valuesToMap();
 
-  map.insert("data", m_data);
+  map.insert("data", m_data.toBase64());
 
   return map;
 }

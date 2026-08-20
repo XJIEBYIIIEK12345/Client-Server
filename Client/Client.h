@@ -19,7 +19,7 @@ public:
   void connect();
 
 private slots:
-  void sendHelloToServer();
+  void initPackageSending();
   void startReconnectTimer();
   void readDataFromServer();
   void closeSocket();
@@ -33,10 +33,8 @@ private:
   quint16 m_port = 6789;
   QString m_address = "127.0.0.1";
   QTcpSocket* m_socket = nullptr;
-  int m_timerIdForSend = 0;
-  int m_timerIdForReconnect = 0;
+  int m_timerId = 0;
   SineGenerator* m_generator = nullptr;
-  qint32 m_countOfBytes;
   IProtocol* m_protocol = nullptr;
 };
 

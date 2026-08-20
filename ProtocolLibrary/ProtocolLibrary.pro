@@ -17,6 +17,9 @@ INCLUDEPATH += $$PWD/src/PackageParser
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    src/MessageProcessorForClient.cpp \
+    src/MessageProcessorForServer.cpp \
+    src/MessageProcessor.cpp \
     src/IProtocol.cpp \
     src/JsonProtocol.cpp \
     src/Package.cpp \
@@ -37,6 +40,9 @@ SOURCES += \
     src/SineGenerator/SineGeneratorForInt64.cpp \
 
 HEADERS += \
+    include/MessageProcessorForClient.h \
+    include/MessageProcessorForServer.h \
+    include/MessageProcessor.h \
     include/IProtocol.h \
     include/JsonProtocol.h \
     include/Package.h \

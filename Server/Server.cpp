@@ -163,7 +163,7 @@ void Server::closeClientSocket()
   if (!socket)
     return;
 
-  qDebug() << "Unknown error";
+  qDebug() << "Error:" << socket->errorString();
   socket->close();
 }
 

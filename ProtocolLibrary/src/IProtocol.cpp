@@ -1,5 +1,9 @@
 #include "IProtocol.h"
 #include "JsonProtocol.h"
+#include "Package.h"
+#include "PackageForDataToGenerate.h"
+#include "PackageForGeneratedData.h"
+#include "PackageForSignal.h"
 
 IProtocol* IProtocol::makeProtocol(ProtocolDataType type)
 {

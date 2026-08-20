@@ -21,7 +21,7 @@ public:
 
 public:
   QString m_valueType;
-  qint32 m_bytes;
+  quint32 m_bytes;
 };
 
 #endif // PACKAGEFORDATATOGENERATE_H

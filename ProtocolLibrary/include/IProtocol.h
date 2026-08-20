@@ -23,6 +23,7 @@ public:
   static QString toString(ProtocolDataType type);
   virtual QByteArray encodeData(Package* pack) = 0;
   virtual Package* decodeData() = 0;
+  QByteArray processMessage(QByteArray message);
 
   QByteArray m_buffer;
 };
