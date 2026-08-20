@@ -19,7 +19,6 @@ INCLUDEPATH += $$PWD/src/PackageParser
 SOURCES += \
     src/MessageProcessorForClient.cpp \
     src/MessageProcessorForServer.cpp \
-    src/MessageProcessor.cpp \
     src/IProtocol.cpp \
     src/JsonProtocol.cpp \
     src/Package.cpp \
@@ -42,7 +41,6 @@ SOURCES += \
 HEADERS += \
     include/MessageProcessorForClient.h \
     include/MessageProcessorForServer.h \
-    include/MessageProcessor.h \
     include/IProtocol.h \
     include/JsonProtocol.h \
     include/Package.h \

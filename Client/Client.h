@@ -3,7 +3,7 @@
 #pragma once
 
 #include "IProtocol.h"
-#include "SineGenerator.h"
+#include "MessageProcessorForClient.h"
 #include <QHostAddress>
 #include <QTcpSocket>
 #include <QTimer>
@@ -27,15 +27,15 @@ private slots:
 protected:
   void sendPackageToServer();
   void connectToServer();
+  void writeToServer(QByteArray message);
   void timerEvent(QTimerEvent* event) override;
 
 private:
   quint16 m_port = 6789;
   QString m_address = "127.0.0.1";
   QTcpSocket* m_socket = nullptr;
-  int m_timerId = 0;
-  SineGenerator* m_generator = nullptr;
-  IProtocol* m_protocol = nullptr;
+  int m_timerIdForConnect = 0;
+  MessageProcessorForClient* m_processor;
 };
 
 #endif // CLIENT_H
