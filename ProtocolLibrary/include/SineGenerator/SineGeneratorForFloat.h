@@ -7,9 +7,11 @@ class SineGeneratorForFloat : public SineGenerator
 {
 public:
   SineGeneratorForFloat();
+  SineGeneratorForFloat(quint32 countOfBytes);
   ~SineGeneratorForFloat();
 
-  QByteArray generateSineForType(quint32 countOfBytes);
+  void setCountOfBytes(quint32 countOfBytes) override;
+  QByteArray generateSineForType() override;
 };
 
 #endif // SINEGENERATORFORFLOAT_H

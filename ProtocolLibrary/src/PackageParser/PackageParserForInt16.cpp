@@ -20,8 +20,7 @@ void PackageParserForInt16::parseAndPrintPackage(QByteArray data, qint32 clientI
            ", ";
   }
 
-  qDebug() << "Server received:" << str << "from Client" << clientId << "\n"
-           << "\n";
+  qDebug() << "Server received:" << str << "from Client" << clientId << "\n";
 
   m_buffer.remove(0, count * sizeof(qint16));
 }

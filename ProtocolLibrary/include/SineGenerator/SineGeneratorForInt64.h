@@ -7,9 +7,11 @@ class SineGeneratorForInt64 : public SineGenerator
 {
 public:
   SineGeneratorForInt64();
+  SineGeneratorForInt64(quint32 countOfBytes);
   ~SineGeneratorForInt64();
 
-  QByteArray generateSineForType(quint32 countOfBytes);
+  void setCountOfBytes(quint32 countOfBytes) override;
+  QByteArray generateSineForType() override;
 };
 
 #endif // SINEGENERATORFORINT64_H

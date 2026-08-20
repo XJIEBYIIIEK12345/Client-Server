@@ -24,9 +24,20 @@ SineGeneratorForInt64::SineGeneratorForInt64()
   }
 }
 
+SineGeneratorForInt64::SineGeneratorForInt64(quint32 countOfBytes)
+  : SineGeneratorForInt64()
+{
+  m_countOfBytes = countOfBytes;
+}
+
 SineGeneratorForInt64::~SineGeneratorForInt64() {}
 
-QByteArray SineGeneratorForInt64::generateSineForType(quint32 countOfBytes)
+void SineGeneratorForInt64::setCountOfBytes(quint32 countOfBytes)
+{
+  m_countOfBytes = countOfBytes;
+}
+
+QByteArray SineGeneratorForInt64::generateSineForType()
 {
   qint16 size = sizeof(qint64);
 
@@ -36,12 +47,12 @@ QByteArray SineGeneratorForInt64::generateSineForType(quint32 countOfBytes)
   }
 
   QByteArray block;
-  block.reserve(countOfBytes * size);
+  block.reserve(m_countOfBytes * size);
 
   quint32 tempBytes = 0;
-  while (tempBytes < countOfBytes)
+  while (tempBytes < m_countOfBytes)
   {
-    quint32 bytesLeft = countOfBytes - tempBytes;
+    quint32 bytesLeft = m_countOfBytes - tempBytes;
     quint32 bytesAvailable = m_block.size() / size - m_lastSinePositionInSinusArray;
     quint32 chunk = qMin(bytesLeft, bytesAvailable);
 

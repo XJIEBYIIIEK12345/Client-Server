@@ -7,9 +7,11 @@ class SineGeneratorForInt16 : public SineGenerator
 {
 public:
   SineGeneratorForInt16();
+  SineGeneratorForInt16(quint32 countOfBytes);
   ~SineGeneratorForInt16();
 
-  QByteArray generateSineForType(quint32 countOfBytes);
+  void setCountOfBytes(quint32 countOfBytes) override;
+  QByteArray generateSineForType() override;
 };
 
 #endif // SINEGENERATORFORINT16_H

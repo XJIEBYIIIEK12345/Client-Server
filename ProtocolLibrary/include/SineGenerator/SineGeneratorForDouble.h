@@ -7,9 +7,11 @@ class SineGeneratorForDouble : public SineGenerator
 {
 public:
   SineGeneratorForDouble();
+  SineGeneratorForDouble(quint32 countOfBytes);
   ~SineGeneratorForDouble();
 
-  QByteArray generateSineForType(quint32 countOfBytes);
+  void setCountOfBytes(quint32 countOfBytes) override;
+  QByteArray generateSineForType() override;
 };
 
 #endif // SINEGENERATORFORDOUBLE_H
