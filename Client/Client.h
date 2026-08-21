@@ -18,13 +18,18 @@ public:
   ~Client();
   void connect();
 
+signals:
+  void wasConnected();
+  void stopSendData();
+  void readyToParseMessage(QByteArray message);
+
 private slots:
   void initPackageSending();
   void startReconnectTimer();
   void readDataFromServer();
   void closeSocket();
 
-protected:
+public:
   void sendPackageToServer();
   void connectToServer();
   void writeToServer(QByteArray message);
@@ -35,7 +40,6 @@ private:
   QString m_address = "127.0.0.1";
   QTcpSocket* m_socket = nullptr;
   int m_timerIdForConnect = 0;
-  MessageProcessorForClient* m_processor;
 };
 
 #endif // CLIENT_H

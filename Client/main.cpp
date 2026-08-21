@@ -1,6 +1,20 @@
 #include "Client.h"
+#include "MessageProcessorForClient.h"
 #include <QCommandLineParser>
 #include <QCoreApplication>
+
+void connectClientToMessageProcessorForClient(Client& client,
+                                              MessageProcessorForClient& processor)
+{
+  QObject::connect(&client, &Client::wasConnected, &processor,
+                   &MessageProcessorForClient::clientConnectedToServer);
+  QObject::connect(&client, &Client::stopSendData, &processor,
+                   &MessageProcessorForClient::stopSending);
+  QObject::connect(&client, &Client::readyToParseMessage, &processor,
+                   &MessageProcessorForClient::parseMessage);
+  QObject::connect(&processor, &MessageProcessorForClient::readyToSend, &client,
+                   &Client::writeToServer);
+}
 
 int main(int argc, char* argv[])
 {
@@ -41,7 +55,9 @@ int main(int argc, char* argv[])
   else
   {
     Client client(address, port, protocols[protocol]);
+    MessageProcessorForClient processor(protocols[protocol]);
     client.connect();
+    connectClientToMessageProcessorForClient(client, processor);
 
     return a.exec();
   }

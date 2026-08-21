@@ -15,7 +15,6 @@ Client::Client(QString address, quint16 port, ProtocolDataType protocol,
 {
   m_address = address;
   m_port = port;
-  m_processor = new MessageProcessorForClient(protocol);
 
   qDebug() << "Client is waiting for server on address:" << address
            << ", port:" << port;
@@ -50,8 +49,6 @@ void Client::connect()
                       &Client::initPackageSending);
   QTcpSocket::connect(m_socket, &QTcpSocket::errorOccurred, this,
                       &Client::closeSocket);
-  QObject::connect(m_processor, &MessageProcessorForClient::readyToSend, this,
-                   &Client::writeToServer);
 
   m_timerIdForConnect = startTimer(1);
 }
@@ -64,12 +61,12 @@ void Client::initPackageSending()
     m_timerIdForConnect = 0;
   }
 
-  m_processor->clientConnectedToServer();
+  emit wasConnected();
 }
 
 void Client::startReconnectTimer()
 {
-  m_processor->stopSending();
+  emit stopSendData();
 
   qDebug() << "Disconnected from server";
 
@@ -83,7 +80,7 @@ void Client::readDataFromServer()
 {
   QByteArray message = m_socket->readAll();
 
-  m_processor->parseMessage(message);
+  emit readyToParseMessage(message);
 }
 
 void Client::closeSocket()
@@ -94,7 +91,7 @@ void Client::closeSocket()
 
 void Client::sendPackageToServer()
 {
-  m_processor->stopSending();
+  emit stopSendData();
 
   if (!m_socket->waitForReadyRead(10000))
   {
