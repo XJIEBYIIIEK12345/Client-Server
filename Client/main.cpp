@@ -14,6 +14,8 @@ void connectClientToMessageProcessorForClient(Client& client,
                    &MessageProcessorForClient::parseMessage);
   QObject::connect(&processor, &MessageProcessorForClient::readyToSend, &client,
                    &Client::writeToServer);
+  QObject::connect(&processor, &MessageProcessorForClient::waitForConfirmation,
+                   &client, &Client::stopSocketIfDataNotConfirmed);
 }
 
 int main(int argc, char* argv[])

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "IProtocol.h"
-#include "MessageProcessorForClient.h"
 #include <QHostAddress>
 #include <QTcpSocket>
 #include <QTimer>
@@ -30,7 +29,7 @@ private slots:
   void closeSocket();
 
 public:
-  void sendPackageToServer();
+  void stopSocketIfDataNotConfirmed();
   void connectToServer();
   void writeToServer(QByteArray message);
   void timerEvent(QTimerEvent* event) override;

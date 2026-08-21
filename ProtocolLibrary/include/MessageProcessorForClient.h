@@ -23,6 +23,7 @@ public:
 
 signals:
   void readyToSend(QByteArray message);
+  void waitForConfirmation();
 
 public:
   int m_timerIdForSend = 0;

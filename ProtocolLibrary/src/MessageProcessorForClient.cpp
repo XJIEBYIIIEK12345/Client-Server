@@ -83,6 +83,7 @@ void MessageProcessorForClient::generateMessageOnTimer()
   qDebug() << "This send" << data;
 
   emit readyToSend(message);
+  emit waitForConfirmation();
 }
 
 void MessageProcessorForClient::stopSending()

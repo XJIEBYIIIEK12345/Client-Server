@@ -89,7 +89,7 @@ void Client::closeSocket()
   m_socket->close();
 }
 
-void Client::sendPackageToServer()
+void Client::stopSocketIfDataNotConfirmed()
 {
   emit stopSendData();
 
