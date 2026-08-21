@@ -7,9 +7,8 @@ PackageForDataToGenerate::PackageForDataToGenerate()
 
 PackageForDataToGenerate::PackageForDataToGenerate(qint32 id, MessageType type,
                                                    QString valueType, quint32 bytes)
+  : Package(id, type)
 {
-  m_id = id;
-  m_type = type;
   m_valueType = valueType;
   m_bytes = bytes;
 }
@@ -18,8 +17,6 @@ PackageForDataToGenerate::PackageForDataToGenerate(
     const PackageForDataToGenerate& pack)
   : Package(pack)
 {
-  // m_id = pack.m_id;
-  // m_type = pack.m_type;
   m_valueType = pack.m_valueType;
   m_bytes = pack.m_bytes;
 }

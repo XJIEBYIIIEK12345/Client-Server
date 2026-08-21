@@ -7,9 +7,8 @@ PackageForGeneratedData::PackageForGeneratedData()
 
 PackageForGeneratedData::PackageForGeneratedData(qint32 id, MessageType type,
                                                  QByteArray data)
+  : Package(id, type)
 {
-  m_id = id;
-  m_type = type;
   m_data = data;
 }
 

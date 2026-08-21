@@ -27,7 +27,7 @@ void MessageProcessorForClient::clientConnectedToServer()
   Package* pack = new PackageForSignal(0, MessageType::MetaDataRequest, true);
   QByteArray message = m_protocol->encodeData(pack);
 
-  emit readyToSend(message);
+  emit appearedGeneratedArray(message);
 }
 
 void MessageProcessorForClient::parseMessage(QByteArray message)
@@ -80,9 +80,9 @@ void MessageProcessorForClient::generateMessageOnTimer()
   Package* pack = new PackageForGeneratedData(1, MessageType::SinAnswer, data);
   QByteArray message = m_protocol->encodeData(pack);
 
-  qDebug() << "This send" << data;
+  qDebug() << "This send:" << data;
 
-  emit readyToSend(message);
+  emit appearedGeneratedArray(message);
   emit waitForConfirmation();
 }
 

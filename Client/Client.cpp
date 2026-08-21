@@ -66,7 +66,7 @@ void Client::initPackageSending()
 
 void Client::startReconnectTimer()
 {
-  emit stopSendData();
+  emit disconnectedOrPackageNotConfirmed();
 
   qDebug() << "Disconnected from server";
 
@@ -80,7 +80,7 @@ void Client::readDataFromServer()
 {
   QByteArray message = m_socket->readAll();
 
-  emit readyToParseMessage(message);
+  emit bytesAppearedForParsing(message);
 }
 
 void Client::closeSocket()
@@ -89,9 +89,9 @@ void Client::closeSocket()
   m_socket->close();
 }
 
-void Client::stopSocketIfDataNotConfirmed()
+void Client::closeSocketIfDataNotConfirmed()
 {
-  emit stopSendData();
+  emit disconnectedOrPackageNotConfirmed();
 
   if (!m_socket->waitForReadyRead(10000))
   {

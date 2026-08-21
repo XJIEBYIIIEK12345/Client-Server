@@ -19,8 +19,8 @@ public:
 
 signals:
   void wasConnected();
-  void stopSendData();
-  void readyToParseMessage(QByteArray message);
+  void disconnectedOrPackageNotConfirmed();
+  void bytesAppearedForParsing(QByteArray message);
 
 private slots:
   void initPackageSending();
@@ -29,7 +29,7 @@ private slots:
   void closeSocket();
 
 public:
-  void stopSocketIfDataNotConfirmed();
+  void closeSocketIfDataNotConfirmed();
   void connectToServer();
   void writeToServer(QByteArray message);
   void timerEvent(QTimerEvent* event) override;

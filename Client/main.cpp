@@ -8,14 +8,14 @@ void connectClientToMessageProcessorForClient(Client& client,
 {
   QObject::connect(&client, &Client::wasConnected, &processor,
                    &MessageProcessorForClient::clientConnectedToServer);
-  QObject::connect(&client, &Client::stopSendData, &processor,
+  QObject::connect(&client, &Client::disconnectedOrPackageNotConfirmed, &processor,
                    &MessageProcessorForClient::stopSending);
-  QObject::connect(&client, &Client::readyToParseMessage, &processor,
+  QObject::connect(&client, &Client::bytesAppearedForParsing, &processor,
                    &MessageProcessorForClient::parseMessage);
-  QObject::connect(&processor, &MessageProcessorForClient::readyToSend, &client,
-                   &Client::writeToServer);
+  QObject::connect(&processor, &MessageProcessorForClient::appearedGeneratedArray,
+                   &client, &Client::writeToServer);
   QObject::connect(&processor, &MessageProcessorForClient::waitForConfirmation,
-                   &client, &Client::stopSocketIfDataNotConfirmed);
+                   &client, &Client::closeSocketIfDataNotConfirmed);
 }
 
 int main(int argc, char* argv[])
@@ -58,8 +58,9 @@ int main(int argc, char* argv[])
   {
     Client client(address, port, protocols[protocol]);
     MessageProcessorForClient processor(protocols[protocol]);
-    client.connect();
+
     connectClientToMessageProcessorForClient(client, processor);
+    client.connect();
 
     return a.exec();
   }

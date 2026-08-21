@@ -6,17 +6,14 @@ PackageForSignal::PackageForSignal()
 {}
 
 PackageForSignal::PackageForSignal(qint32 id, MessageType type, bool flag)
+  : Package(id, type)
 {
-  m_id = id;
-  m_type = type;
   m_flag = flag;
 }
 
 PackageForSignal::PackageForSignal(const PackageForSignal& pack)
   : Package(pack)
 {
-  // m_id = pack.m_id;
-  // m_type = pack.m_type;
   m_flag = pack.m_flag;
 }
 

@@ -22,7 +22,7 @@ public:
   void timerEvent(QTimerEvent* event) override;
 
 signals:
-  void readyToSend(QByteArray message);
+  void appearedGeneratedArray(QByteArray message);
   void waitForConfirmation();
 
 public:
