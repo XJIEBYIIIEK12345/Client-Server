@@ -4,7 +4,6 @@
 #include "PackageForSignal.h"
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonValue>
 
 JsonProtocol::JsonProtocol() {}
 
@@ -12,15 +11,13 @@ JsonProtocol::~JsonProtocol() {}
 
 QByteArray JsonProtocol::encodeData(Package* pack)
 {
-  const char frontByte = 0x02;
-  const char endByte = 0x03;
+  const char endByte = '\n';
 
   QJsonObject jsonObj = QJsonObject::fromVariantMap(pack->valuesToMap());
 
   QJsonDocument jsonDoc(jsonObj);
-  QByteArray data = jsonDoc.toJson();
+  QByteArray data = jsonDoc.toJson(QJsonDocument::Compact);
 
-  data.prepend(frontByte);
   data.append(endByte);
 
   return data;
@@ -28,26 +25,21 @@ QByteArray JsonProtocol::encodeData(Package* pack)
 
 Package* JsonProtocol::decodeData()
 {
-  const char frontByte = 0x02;
-  const char endByte = 0x03;
-
-  int frontByteIndex = m_buffer.indexOf(frontByte);
+  const char endByte = '\n';
   int endByteIndex = m_buffer.indexOf(endByte);
-  int count = endByteIndex - frontByteIndex;
 
-  if (frontByteIndex < 0 || endByteIndex < 0)
+  if (endByteIndex < 0)
   {
     return nullptr;
   }
   QJsonParseError* err = nullptr;
 
   QByteArray tempBuffer;
-  tempBuffer.insert(frontByteIndex, m_buffer, count);
-  tempBuffer.remove(0, 1);
+  tempBuffer = m_buffer.left(endByteIndex);
 
   QJsonObject jsonObj = QJsonDocument::fromJson(tempBuffer, err).object();
 
-  m_buffer.remove(frontByteIndex, count + 1);
+  m_buffer.remove(0, endByteIndex + 1);
 
   if (err == nullptr)
   {

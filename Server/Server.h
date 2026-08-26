@@ -3,21 +3,7 @@
 #pragma once
 
 #include "IProtocol.h"
-#include "PackageParser.h"
-#include <QMap>
 #include <QTcpServer>
-#include <QTcpSocket>
-
-struct ClientData
-{
-  quint32 m_id;
-  PackageParser* m_parser = nullptr;
-  IProtocol* m_clientProtocol = nullptr;
-
-  ClientData();
-  ClientData(quint32 _id);
-  ~ClientData();
-};
 
 class Server : public QTcpServer
 {
@@ -27,17 +13,13 @@ public:
   explicit Server(quint16 port, ProtocolDataType protocol,
                   QObject* parent = nullptr);
 
+signals:
+  void clientStartConnecting(quintptr socketDescriptor);
+
 protected:
   void incomingConnection(qintptr socketDescriptor) override;
 
-private slots:
-  void parseMessageFromClient();
-  void cleanClientData();
-  void closeClientSocket();
-  void logClientState();
-
 private:
-  QMap<QTcpSocket*, ClientData> m_connectedClients;
   ProtocolDataType m_serverProtocol;
 };
 

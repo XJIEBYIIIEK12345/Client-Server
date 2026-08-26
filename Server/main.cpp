@@ -1,11 +1,14 @@
+#include "MultithreadManager.h"
 #include "Server.h"
 #include <QCommandLineParser>
 #include <QCoreApplication>
-#include <QRandomGenerator>
+#include <QMetaType>
 
 int main(int argc, char* argv[])
 {
   QCoreApplication a(argc, argv);
+
+  qRegisterMetaType<quintptr>("quintptr");
 
   QMap<QString, ProtocolDataType> protocols = {{"json", ProtocolDataType::JsonType},
                                                {"bin", ProtocolDataType::BinType},
@@ -37,6 +40,10 @@ int main(int argc, char* argv[])
   else
   {
     Server server(port, protocols[protocol]);
+
+    MultithreadManager manager(protocols[protocol]);
+    QObject::connect(&server, &Server::clientStartConnecting, &manager,
+                     &MultithreadManager::connectClientToServer);
 
     return a.exec();
   }

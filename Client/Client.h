@@ -5,7 +5,6 @@
 #include "IProtocol.h"
 #include <QHostAddress>
 #include <QTcpSocket>
-#include <QTimer>
 
 class Client : public QObject
 {
@@ -18,18 +17,18 @@ public:
   void connect();
 
 signals:
-  void wasConnected();
-  void disconnectedOrPackageNotConfirmed();
-  void bytesAppearedForParsing(QByteArray message);
+  void readyForSend();
+  void notReadyForSend();
+  void bytesReceived(QByteArray message);
 
 private slots:
-  void initPackageSending();
-  void startReconnectTimer();
+  void stopReconnecting();
+  void startReconnecting();
   void readDataFromServer();
-  void closeSocket();
+  void logError();
 
 public:
-  void closeSocketIfDataNotConfirmed();
+  void closeSocket();
   void connectToServer();
   void writeToServer(QByteArray message);
   void timerEvent(QTimerEvent* event) override;

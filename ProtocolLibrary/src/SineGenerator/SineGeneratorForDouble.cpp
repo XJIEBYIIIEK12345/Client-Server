@@ -1,5 +1,4 @@
 #include "SineGeneratorForDouble.h"
-#include <QDebug>
 #include <QtMath>
 
 SineGeneratorForDouble::SineGeneratorForDouble()

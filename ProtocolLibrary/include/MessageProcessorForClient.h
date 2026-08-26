@@ -12,18 +12,18 @@ public:
   MessageProcessorForClient(ProtocolDataType protocol);
   ~MessageProcessorForClient();
 
-  void clientConnectedToServer();
+  void makeDataRequestMessage();
 
   void parseMessage(QByteArray message);
-  void generateMessageOnTimer();
-  void stopSending();
-  void startSending();
+  void generateMessage();
+  void stopGeneration();
+  void startGeneretion();
 
   void timerEvent(QTimerEvent* event) override;
 
 signals:
   void appearedGeneratedArray(QByteArray message);
-  void waitForConfirmation();
+  void needToConfirmArray();
 
 public:
   int m_timerIdForSend = 0;

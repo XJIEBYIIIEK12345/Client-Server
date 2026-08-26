@@ -20,10 +20,8 @@ MessageProcessorForClient::~MessageProcessorForClient()
   }
 }
 
-void MessageProcessorForClient::clientConnectedToServer()
+void MessageProcessorForClient::makeDataRequestMessage()
 {
-  qDebug() << "Connected to server";
-
   Package* pack = new PackageForSignal(0, MessageType::MetaDataRequest, true);
   QByteArray message = m_protocol->encodeData(pack);
 
@@ -73,7 +71,7 @@ void MessageProcessorForClient::parseMessage(QByteArray message)
   }
 }
 
-void MessageProcessorForClient::generateMessageOnTimer()
+void MessageProcessorForClient::generateMessage()
 {
   QByteArray data = m_generator->generateSineForType();
 
@@ -83,10 +81,10 @@ void MessageProcessorForClient::generateMessageOnTimer()
   qDebug() << "This send:" << data;
 
   emit appearedGeneratedArray(message);
-  emit waitForConfirmation();
+  emit needToConfirmArray();
 }
 
-void MessageProcessorForClient::stopSending()
+void MessageProcessorForClient::stopGeneration()
 {
   if (m_timerIdForSend != 0)
   {
@@ -94,7 +92,7 @@ void MessageProcessorForClient::stopSending()
     m_timerIdForSend = 0;
   }
 }
-void MessageProcessorForClient::startSending()
+void MessageProcessorForClient::startGeneretion()
 {
   if (m_timerIdForSend == 0)
   {
@@ -106,7 +104,7 @@ void MessageProcessorForClient::timerEvent(QTimerEvent* event)
 {
   if (event->timerId() == m_timerIdForSend)
   {
-    generateMessageOnTimer();
+    generateMessage();
   }
   else
   {

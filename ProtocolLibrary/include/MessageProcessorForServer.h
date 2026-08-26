@@ -1,10 +1,26 @@
 #ifndef MESSAGEPROCESSORFORSERVER_H
 #define MESSAGEPROCESSORFORSERVER_H
 
-class MessageProcessorForServer
+#include "IProtocol.h"
+#include "PackageParser.h"
+
+class MessageProcessorForServer : public QObject
 {
+  Q_OBJECT
+
 public:
-  MessageProcessorForServer();
+  MessageProcessorForServer(ProtocolDataType protocol);
+  ~MessageProcessorForServer();
+
+  void parseMessage(QByteArray message, quintptr id);
+
+signals:
+  void appearedGeneratedArray(QByteArray message);
+
+public:
+  IProtocol* m_protocol = nullptr;
+  PackageParser* m_parser = nullptr;
+  quint32 m_id;
 };
 
 #endif // MESSAGEPROCESSORFORSERVER_H

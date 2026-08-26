@@ -1,10 +1,6 @@
 #include "Client.h"
 #include "IProtocol.h"
-#include "Package.h"
-#include <QDataStream>
-#include <QIODevice>
 #include <QTcpSocket>
-#include <QTimer>
 #include <QTimerEvent>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -29,8 +25,8 @@ void Client::connect()
   m_socket = new QTcpSocket(this);
 
   int keepcnt = 3;
-  int keepidle = 10;
-  int keepintvl = 10;
+  int keepidle = 5;
+  int keepintvl = 5;
 
   m_socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 
@@ -44,16 +40,15 @@ void Client::connect()
   QTcpSocket::connect(m_socket, &QTcpSocket::readyRead, this,
                       &Client::readDataFromServer);
   QTcpSocket::connect(m_socket, &QTcpSocket::disconnected, this,
-                      &Client::startReconnectTimer);
+                      &Client::startReconnecting);
   QTcpSocket::connect(m_socket, &QTcpSocket::connected, this,
-                      &Client::initPackageSending);
-  QTcpSocket::connect(m_socket, &QTcpSocket::errorOccurred, this,
-                      &Client::closeSocket);
+                      &Client::stopReconnecting);
+  QTcpSocket::connect(m_socket, &QTcpSocket::errorOccurred, this, &Client::logError);
 
   m_timerIdForConnect = startTimer(1);
 }
 
-void Client::initPackageSending()
+void Client::stopReconnecting()
 {
   if (m_timerIdForConnect != 0)
   {
@@ -61,12 +56,12 @@ void Client::initPackageSending()
     m_timerIdForConnect = 0;
   }
 
-  emit wasConnected();
+  emit readyForSend();
 }
 
-void Client::startReconnectTimer()
+void Client::startReconnecting()
 {
-  emit disconnectedOrPackageNotConfirmed();
+  emit notReadyForSend();
 
   qDebug() << "Disconnected from server";
 
@@ -80,19 +75,17 @@ void Client::readDataFromServer()
 {
   QByteArray message = m_socket->readAll();
 
-  emit bytesAppearedForParsing(message);
+  emit bytesReceived(message);
 }
 
-void Client::closeSocket()
+void Client::logError()
 {
   qDebug() << "Error:" << m_socket->errorString();
   m_socket->close();
 }
 
-void Client::closeSocketIfDataNotConfirmed()
+void Client::closeSocket()
 {
-  emit disconnectedOrPackageNotConfirmed();
-
   if (!m_socket->waitForReadyRead(10000))
   {
     m_socket->close();

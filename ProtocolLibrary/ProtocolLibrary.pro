@@ -1,4 +1,5 @@
 QT -= gui
+QT += network
 
 TEMPLATE = lib
 DEFINES += PROTOCOLLIBRARY_LIBRARY
@@ -17,10 +18,12 @@ INCLUDEPATH += $$PWD/src/PackageParser
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    src/WorkerThread.cpp \
     src/MessageProcessorForClient.cpp \
     src/MessageProcessorForServer.cpp \
     src/IProtocol.cpp \
     src/JsonProtocol.cpp \
+    src/MultithreadManager.cpp \
     src/Package.cpp \
     src/PackageForDataToGenerate.cpp \
     src/PackageForGeneratedData.cpp \
@@ -39,10 +42,12 @@ SOURCES += \
     src/SineGenerator/SineGeneratorForInt64.cpp \
 
 HEADERS += \
+    include/WorkerThread.h \
     include/MessageProcessorForClient.h \
     include/MessageProcessorForServer.h \
     include/IProtocol.h \
     include/JsonProtocol.h \
+    include/MultithreadManager.h \
     include/Package.h \
     include/PackageForDataToGenerate.h \
     include/PackageForGeneratedData.h \

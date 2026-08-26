@@ -6,16 +6,16 @@
 void connectClientToMessageProcessorForClient(Client& client,
                                               MessageProcessorForClient& processor)
 {
-  QObject::connect(&client, &Client::wasConnected, &processor,
-                   &MessageProcessorForClient::clientConnectedToServer);
-  QObject::connect(&client, &Client::disconnectedOrPackageNotConfirmed, &processor,
-                   &MessageProcessorForClient::stopSending);
-  QObject::connect(&client, &Client::bytesAppearedForParsing, &processor,
+  QObject::connect(&client, &Client::readyForSend, &processor,
+                   &MessageProcessorForClient::makeDataRequestMessage);
+  QObject::connect(&client, &Client::notReadyForSend, &processor,
+                   &MessageProcessorForClient::stopGeneration);
+  QObject::connect(&client, &Client::bytesReceived, &processor,
                    &MessageProcessorForClient::parseMessage);
   QObject::connect(&processor, &MessageProcessorForClient::appearedGeneratedArray,
                    &client, &Client::writeToServer);
-  QObject::connect(&processor, &MessageProcessorForClient::waitForConfirmation,
-                   &client, &Client::closeSocketIfDataNotConfirmed);
+  QObject::connect(&processor, &MessageProcessorForClient::needToConfirmArray,
+                   &client, &Client::closeSocket);
 }
 
 int main(int argc, char* argv[])

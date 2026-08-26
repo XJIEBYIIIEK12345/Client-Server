@@ -5,3 +5,6 @@ SUBDIRS = \
         Server \
         Client \
 
+Server.depends = ProtocolLibrary
+
+Client.depends = ProtocolLibrary
