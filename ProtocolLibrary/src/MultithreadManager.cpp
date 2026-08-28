@@ -1,4 +1,5 @@
 #include "MultithreadManager.h"
+#include "WorkerThread.h"
 #include <QThread>
 
 MultithreadManager::MultithreadManager(ProtocolDataType protocol)
@@ -6,33 +7,23 @@ MultithreadManager::MultithreadManager(ProtocolDataType protocol)
   m_protocol = protocol;
 }
 
-void MultithreadManager::connectClientToServer(quintptr socketDescriptor)
+void MultithreadManager::clientConnectedToServer(quintptr socketDescriptor)
 {
   WorkerThread* worker = new WorkerThread(socketDescriptor);
   QThread* thread = new QThread;
+  worker->moveToThread(thread);
   MessageProcessorForServer* processor = new MessageProcessorForServer(m_protocol);
-  // m_connectedClients.insert(socketDescriptor, {worker, processor});
 
   QObject::connect(worker, &WorkerThread::bytesReceived, processor,
                    &MessageProcessorForServer::parseMessage);
   QObject::connect(processor, &MessageProcessorForServer::appearedGeneratedArray,
                    worker, &WorkerThread::writeToReceiver);
-  QObject::connect(worker, &WorkerThread::wasDisconnected, this,
-                   &MultithreadManager::cleanClientData);
+  QObject::connect(this, &MultithreadManager::cleanAll, worker, &WorkerThread::stop);
 
   QObject::connect(thread, &QThread::started, worker, &WorkerThread::process);
-  QObject::connect(thread, &QThread::finished, worker, &WorkerThread::stop);
+  QObject::connect(thread, &QThread::finished, worker, &QObject::deleteLater);
+  QObject::connect(thread, &QThread::finished, thread, &QObject::deleteLater);
+  QObject::connect(worker, &WorkerThread::finished, thread, &QThread::quit);
 
-  worker->moveToThread(thread);
   thread->start();
-}
-
-void MultithreadManager::cleanClientData()
-{
-  // quintptr disconnectedSocket =
-  //     qobject_cast<QTcpSocket*>(sender())->socketDescriptor();
-  // if (!disconnectedSocket)
-  //   return;
-
-  // m_connectedClients.remove(disconnectedSocket);
 }

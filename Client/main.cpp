@@ -2,6 +2,13 @@
 #include "MessageProcessorForClient.h"
 #include <QCommandLineParser>
 #include <QCoreApplication>
+#include <signal.h>
+
+void closeClient(int sig)
+{
+  qDebug() << '\n' << "Client is closing...";
+  QCoreApplication::exit(sig);
+}
 
 void connectClientToMessageProcessorForClient(Client& client,
                                               MessageProcessorForClient& processor)
@@ -21,6 +28,7 @@ void connectClientToMessageProcessorForClient(Client& client,
 int main(int argc, char* argv[])
 {
   QCoreApplication a(argc, argv);
+  signal(SIGINT, closeClient);
 
   QMap<QString, ProtocolDataType> protocols = {{"json", ProtocolDataType::JsonType},
                                                {"bin", ProtocolDataType::BinType},
@@ -57,6 +65,7 @@ int main(int argc, char* argv[])
   else
   {
     Client client(address, port, protocols[protocol]);
+    QObject::connect(&a, &QCoreApplication::aboutToQuit, &client, &Client::closeAll);
     MessageProcessorForClient processor(protocols[protocol]);
 
     connectClientToMessageProcessorForClient(client, processor);

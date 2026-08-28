@@ -12,13 +12,14 @@ public:
   WorkerThread(quintptr socketDescriptor = 0);
 
   void writeToReceiver(QByteArray message);
+  quintptr getSocketDescriptor();
 
   void process();
   void stop();
 
 signals:
   void bytesReceived(QByteArray message, quintptr socketDescriptor);
-  void wasDisconnected();
+  void finished();
 
 private slots:
   void readDataFromSender();

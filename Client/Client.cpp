@@ -18,7 +18,14 @@ Client::Client(QString address, quint16 port, ProtocolDataType protocol,
            << "data format";
 }
 
-Client::~Client() {}
+Client::~Client()
+{
+  if (m_socket != nullptr)
+  {
+    m_socket->deleteLater();
+    m_socket = nullptr;
+  }
+}
 
 void Client::connect()
 {
@@ -46,6 +53,13 @@ void Client::connect()
   QTcpSocket::connect(m_socket, &QTcpSocket::errorOccurred, this, &Client::logError);
 
   m_timerIdForConnect = startTimer(1);
+}
+
+void Client::closeAll()
+{
+  emit notReadyForSend();
+  m_socket->close();
+  m_socket->deleteLater();
 }
 
 void Client::stopReconnecting()

@@ -9,6 +9,8 @@ WorkerThread::WorkerThread(quintptr socketDescriptor)
 
 void WorkerThread::writeToReceiver(QByteArray message) { m_socket->write(message); }
 
+quintptr WorkerThread::getSocketDescriptor() { return m_socketDescriptor; }
+
 void WorkerThread::process()
 {
   m_socket = new QTcpSocket();
@@ -19,8 +21,6 @@ void WorkerThread::process()
                         &WorkerThread::readDataFromSender);
     QTcpSocket::connect(m_socket, &QTcpSocket::disconnected, this,
                         &WorkerThread::stop);
-    QTcpSocket::connect(m_socket, &QTcpSocket::disconnected, this,
-                        &QTcpSocket::deleteLater);
     QTcpSocket::connect(m_socket, &QTcpSocket::errorOccurred, this,
                         &WorkerThread::logErrorAndCloseSocket);
     QTcpSocket::connect(m_socket, &QTcpSocket::stateChanged, this,
@@ -49,9 +49,16 @@ void WorkerThread::stop()
 {
   if (!m_socket)
     return;
-  emit wasDisconnected();
+
   m_socket->close();
-  // m_socketDescriptor = 0;
+  m_socket->deleteLater();
+
+  qDebug() << "The worker with id:" << m_socketDescriptor << "socket:" << m_socket
+           << "was closed";
+
+  m_socket = nullptr;
+  m_socketDescriptor = 0;
+  emit finished();
 }
 
 void WorkerThread::readDataFromSender()

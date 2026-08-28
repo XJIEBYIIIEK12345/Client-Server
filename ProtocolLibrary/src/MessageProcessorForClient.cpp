@@ -18,6 +18,11 @@ MessageProcessorForClient::~MessageProcessorForClient()
     delete m_generator;
     m_generator = nullptr;
   }
+  if (m_protocol != nullptr)
+  {
+    delete m_protocol;
+    m_protocol = nullptr;
+  }
 }
 
 void MessageProcessorForClient::makeDataRequestMessage()
@@ -26,6 +31,11 @@ void MessageProcessorForClient::makeDataRequestMessage()
   QByteArray message = m_protocol->encodeData(pack);
 
   emit appearedGeneratedArray(message);
+  if (pack != nullptr)
+  {
+    delete pack;
+    pack = nullptr;
+  }
 }
 
 void MessageProcessorForClient::parseMessage(QByteArray message)
@@ -40,15 +50,19 @@ void MessageProcessorForClient::parseMessage(QByteArray message)
     {
     case MessageType::MetaDataResponse:
     {
-      PackageForDataToGenerate* packageFromServer =
+      PackageForDataToGenerate* packageFromSender =
           dynamic_cast<PackageForDataToGenerate*>(pack);
 
-      m_generator = SineGenerator::makeGenerator(packageFromServer->m_valueType);
-      m_generator->setCountOfBytes(packageFromServer->m_bytes);
+      m_generator = SineGenerator::makeGenerator(packageFromSender->m_valueType);
+      m_generator->setCountOfBytes(packageFromSender->m_bytes);
 
       if (m_timerIdForSend == 0)
       {
         m_timerIdForSend = startTimer(2500);
+      }
+      if (packageFromSender != nullptr)
+      {
+        packageFromSender = nullptr;
       }
     }
     break;
@@ -82,6 +96,11 @@ void MessageProcessorForClient::generateMessage()
 
   emit appearedGeneratedArray(message);
   emit needToConfirmArray();
+  if (pack != nullptr)
+  {
+    delete pack;
+    pack = nullptr;
+  }
 }
 
 void MessageProcessorForClient::stopGeneration()

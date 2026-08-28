@@ -15,6 +15,7 @@ public:
                   QObject* parent = nullptr);
   ~Client();
   void connect();
+  void closeAll();
 
 signals:
   void readyForSend();

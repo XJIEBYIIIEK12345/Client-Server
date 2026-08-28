@@ -1,7 +1,6 @@
 #ifndef MULTITHREADMANAGER_H
 #define MULTITHREADMANAGER_H
 
-#include "WorkerThread.h"
 #include <MessageProcessorForServer.h>
 
 class MultithreadManager : public QObject
@@ -11,14 +10,15 @@ class MultithreadManager : public QObject
 public:
   MultithreadManager(ProtocolDataType protocol);
 
-  void connectClientToServer(quintptr socketDescriptor);
+  void clientConnectedToServer(quintptr socketDescriptor);
 
-private slots:
-  void cleanClientData();
+signals:
+  void cleanAll();
 
 private:
-  QMap<quintptr, std::pair<WorkerThread*, MessageProcessorForServer*>>
-      m_connectedClients;
+  void clean();
+
+private:
   ProtocolDataType m_protocol;
 };
 
