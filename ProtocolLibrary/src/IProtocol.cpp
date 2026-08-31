@@ -1,5 +1,6 @@
 #include "IProtocol.h"
 #include "JsonProtocol.h"
+#include "XmlProtocol.h"
 
 IProtocol* IProtocol::makeProtocol(ProtocolDataType type)
 {
@@ -10,7 +11,7 @@ IProtocol* IProtocol::makeProtocol(ProtocolDataType type)
   case ProtocolDataType::BinType:
     // return new BinProtocol();
   case ProtocolDataType::XmlType:
-    // return new XmlProtocol();
+    return new XmlProtocol();
   default:
     return new JsonProtocol();
   }
@@ -22,8 +23,8 @@ IProtocol* IProtocol::makeProtocol(QString type)
     return new JsonProtocol();
   // else if (type == "bin")
   //     return new BinProtocol();
-  // else if (type == "xml")
-  //     return new XmlProtocol();
+  else if (type == "xml")
+    return new XmlProtocol();
   else
     return new JsonProtocol();
 }

@@ -19,7 +19,6 @@ QByteArray JsonProtocol::encodeData(Package* pack)
   QByteArray data = jsonDoc.toJson(QJsonDocument::Compact);
 
   data.append(endByte);
-
   return data;
 }
 

@@ -59,7 +59,12 @@ void Client::closeAll()
 {
   emit notReadyForSend();
   m_socket->close();
-  m_socket->deleteLater();
+
+  if (m_socket != nullptr)
+  {
+    m_socket->deleteLater();
+    m_socket = nullptr;
+  }
 }
 
 void Client::stopReconnecting()
