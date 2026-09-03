@@ -7,7 +7,7 @@
 class JsonProtocol : public IProtocol
 {
 public:
-  JsonProtocol();
+  JsonProtocol(log4cplus::Logger logger);
   ~JsonProtocol();
 
   QByteArray encodeData(Package* pack) override;

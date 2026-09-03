@@ -5,7 +5,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
-JsonProtocol::JsonProtocol() {}
+JsonProtocol::JsonProtocol(log4cplus::Logger logger) { m_logger = logger; }
 
 JsonProtocol::~JsonProtocol() {}
 
@@ -16,6 +16,11 @@ QByteArray JsonProtocol::encodeData(Package* pack)
   QJsonObject jsonObj = QJsonObject::fromVariantMap(pack->valuesToMap());
 
   QJsonDocument jsonDoc(jsonObj);
+
+  LOG4CPLUS_TRACE(
+      m_logger,
+      "This send: " << jsonDoc.toJson(QJsonDocument::Indented).toStdString());
+
   QByteArray data = jsonDoc.toJson(QJsonDocument::Compact);
 
   data.append(endByte);
@@ -57,7 +62,7 @@ Package* JsonProtocol::decodeData()
       return new PackageForSignal(jsonObj.toVariantMap());
       break;
     case MessageType::Count:
-      qDebug() << "This type of message is unsupported";
+      LOG4CPLUS_WARN(m_logger, "This type of message is unsupported");
       return nullptr;
       break;
     }

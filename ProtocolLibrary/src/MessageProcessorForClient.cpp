@@ -3,12 +3,13 @@
 #include "PackageForDataToGenerate.h"
 #include "PackageForGeneratedData.h"
 #include "PackageForSignal.h"
-#include <QDebug>
 #include <QTimerEvent>
 
-MessageProcessorForClient::MessageProcessorForClient(ProtocolDataType protocol)
+MessageProcessorForClient::MessageProcessorForClient(ProtocolDataType protocol,
+                                                     log4cplus::Logger logger)
 {
-  m_protocol = IProtocol::makeProtocol(protocol);
+  m_protocol = IProtocol::makeProtocol(protocol, logger);
+  m_logger = logger;
 }
 
 MessageProcessorForClient::~MessageProcessorForClient()
@@ -75,7 +76,8 @@ void MessageProcessorForClient::parseMessage(QByteArray message)
     }
     break;
     default:
-      qDebug() << "Unable to process this type of message:" << pack->m_type;
+      LOG4CPLUS_WARN(m_logger,
+                     "Unable to process this type of message: " << pack->m_type);
     }
   }
   if (pack != nullptr)
@@ -92,7 +94,8 @@ void MessageProcessorForClient::generateMessage()
   Package* pack = new PackageForGeneratedData(1, MessageType::SinAnswer, data);
   QByteArray message = m_protocol->encodeData(pack);
 
-  qDebug() << "This send:" << data;
+  // LOG4CPLUS_TRACE(m_logger, "This send: " << data.toBase64().toStdString());
+  LOG4CPLUS_INFO(m_logger, "This send data");
 
   emit appearedGeneratedArray(message);
   emit needToConfirmArray();

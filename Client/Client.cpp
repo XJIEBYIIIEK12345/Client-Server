@@ -6,16 +6,19 @@
 #include <netinet/tcp.h>
 
 Client::Client(QString address, quint16 port, ProtocolDataType protocol,
-               QObject* parent)
+               log4cplus::Logger logger, QObject* parent)
   : QObject(parent)
 {
   m_address = address;
   m_port = port;
+  m_logger = logger;
 
-  qDebug() << "Client is waiting for server on address:" << address
-           << ", port:" << port;
-  qDebug() << "Client is working with" << IProtocol::toString(protocol)
-           << "data format";
+  LOG4CPLUS_INFO(m_logger, "Client is waiting for server on address: "
+                               << address.toStdString() << ", port: " << port);
+
+  LOG4CPLUS_INFO(m_logger, "Client is working with "
+                               << IProtocol::toString(protocol).toStdString()
+                               << " data format");
 }
 
 Client::~Client()
@@ -82,7 +85,7 @@ void Client::startReconnecting()
 {
   emit notReadyForSend();
 
-  qDebug() << "Disconnected from server";
+  LOG4CPLUS_INFO(m_logger, "Disconnected from server");
 
   if (m_timerIdForConnect == 0)
   {
@@ -99,7 +102,7 @@ void Client::readDataFromServer()
 
 void Client::logError()
 {
-  qDebug() << "Error:" << m_socket->errorString();
+  LOG4CPLUS_ERROR(m_logger, m_socket->errorString().toStdString());
   m_socket->close();
 }
 
@@ -118,7 +121,7 @@ void Client::closeSocket()
 
 void Client::connectToServer()
 {
-  qDebug() << "Connecting...";
+  LOG4CPLUS_INFO(m_logger, "Connecting...");
   m_socket->connectToHost(QHostAddress(m_address), m_port, QTcpSocket::ReadWrite);
 }
 

@@ -6,7 +6,7 @@
 class PackageParserForInt32 : public PackageParser
 {
 public:
-  PackageParserForInt32();
+  PackageParserForInt32(log4cplus::Logger logger);
   ~PackageParserForInt32();
 
   void parseAndPrintPackage(QByteArray data, qint32 clientId) override;

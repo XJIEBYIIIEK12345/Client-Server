@@ -1,23 +1,28 @@
 #include "Server.h"
 
-Server::Server(quint16 port, ProtocolDataType protocol, QObject* parent)
+Server::Server(quint16 port, ProtocolDataType protocol, log4cplus::Logger logger,
+               QObject* parent)
   : QTcpServer(parent)
 {
+  m_logger = logger;
+
   if (!listen(QHostAddress::Any, port))
   {
-    qDebug() << "Server was not started\n";
+    LOG4CPLUS_ERROR(m_logger, "Server was not started\n");
   }
   else
   {
-    qDebug() << "Server was started on port:" << port;
+    LOG4CPLUS_INFO(m_logger, "Server was started on port: " << port);
     m_serverProtocol = protocol;
-    qDebug() << "Server is working with" << IProtocol::toString(protocol)
-             << "data format";
+    LOG4CPLUS_INFO(m_logger, "Server is working with "
+                                 << IProtocol::toString(protocol).toStdString()
+                                 << " data format");
   }
 }
 
 void Server::incomingConnection(qintptr socketDescriptor)
 {
   emit clientStartConnecting(socketDescriptor);
-  qDebug() << "Client with id" << socketDescriptor << "was connected";
+  LOG4CPLUS_INFO(m_logger,
+                 "Client with id " << socketDescriptor << " was connected");
 }

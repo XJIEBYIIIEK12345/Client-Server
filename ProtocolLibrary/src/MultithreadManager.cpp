@@ -2,17 +2,20 @@
 #include "WorkerThread.h"
 #include <QThread>
 
-MultithreadManager::MultithreadManager(ProtocolDataType protocol)
+MultithreadManager::MultithreadManager(ProtocolDataType protocol,
+                                       log4cplus::Logger logger)
 {
+  m_logger = logger;
   m_protocol = protocol;
 }
 
 void MultithreadManager::clientConnectedToServer(quintptr socketDescriptor)
 {
-  WorkerThread* worker = new WorkerThread(socketDescriptor);
+  WorkerThread* worker = new WorkerThread(m_logger, socketDescriptor);
   QThread* thread = new QThread;
   worker->moveToThread(thread);
-  MessageProcessorForServer* processor = new MessageProcessorForServer(m_protocol);
+  MessageProcessorForServer* processor =
+      new MessageProcessorForServer(m_protocol, m_logger);
 
   QObject::connect(worker, &WorkerThread::bytesReceived, processor,
                    &MessageProcessorForServer::parseMessage);

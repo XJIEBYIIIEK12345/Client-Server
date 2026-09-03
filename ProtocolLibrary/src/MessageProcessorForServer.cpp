@@ -6,9 +6,11 @@
 #include "PackageParser.h"
 #include <QRandomGenerator64>
 
-MessageProcessorForServer::MessageProcessorForServer(ProtocolDataType protocol)
+MessageProcessorForServer::MessageProcessorForServer(ProtocolDataType protocol,
+                                                     log4cplus::Logger logger)
 {
-  m_protocol = IProtocol::makeProtocol(protocol);
+  m_logger = logger;
+  m_protocol = IProtocol::makeProtocol(protocol, logger);
 }
 
 MessageProcessorForServer::~MessageProcessorForServer()
@@ -43,7 +45,7 @@ void MessageProcessorForServer::parseMessage(QByteArray message, quintptr id)
           randomGenerator->bounded(0, int(PackageParserType::Count) - 1));
 
       QString valueType = packageParserTypeName(packageParserType);
-      m_parser = PackageParser::makeParser(packageParserType);
+      m_parser = PackageParser::makeParser(packageParserType, m_logger);
 
       quint32 bytes = randomGenerator->bounded(0, 100000);
 
@@ -74,8 +76,8 @@ void MessageProcessorForServer::parseMessage(QByteArray message, quintptr id)
     }
     break;
     default:
-      qDebug() << "Unable to process this type of message:"
-               << packFromSender->m_type;
+      LOG4CPLUS_WARN(m_logger, "Unable to process this type of message: "
+                                   << packFromSender->m_type);
     }
   }
   if (packFromSender != nullptr)

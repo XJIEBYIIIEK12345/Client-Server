@@ -5,6 +5,8 @@
 #include "IProtocol.h"
 #include <QHostAddress>
 #include <QTcpSocket>
+#include <log4cplus/logger.h>
+#include <log4cplus/loggingmacros.h>
 
 class Client : public QObject
 {
@@ -12,7 +14,7 @@ class Client : public QObject
 
 public:
   explicit Client(QString address, quint16 port, ProtocolDataType protocol,
-                  QObject* parent = nullptr);
+                  log4cplus::Logger logger, QObject* parent = nullptr);
   ~Client();
   void connect();
   void closeAll();
@@ -39,6 +41,7 @@ private:
   QString m_address = "127.0.0.1";
   QTcpSocket* m_socket = nullptr;
   int m_timerIdForConnect = 0;
+  log4cplus::Logger m_logger;
 };
 
 #endif // CLIENT_H

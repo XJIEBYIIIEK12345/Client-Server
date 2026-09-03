@@ -1,7 +1,9 @@
 #include "PackageParserForInt64.h"
-#include <QDebug>
 
-PackageParserForInt64::PackageParserForInt64() {}
+PackageParserForInt64::PackageParserForInt64(log4cplus::Logger logger)
+{
+  m_logger = logger;
+}
 
 PackageParserForInt64::~PackageParserForInt64() {}
 
@@ -20,8 +22,10 @@ void PackageParserForInt64::parseAndPrintPackage(QByteArray data, qint32 clientI
            ", ";
   }
 
-  qDebug() << "Server received:" << str << "from Client" << clientId << "\n"
-           << "\n";
+  LOG4CPLUS_TRACE(m_logger, "Received: " << str.toStdString() << " from Client "
+                                         << clientId << "\n"
+                                         << "\n";);
+  LOG4CPLUS_INFO(m_logger, "Received data from Client " << clientId;);
 
   m_buffer.remove(0, count * sizeof(qint64));
 }

@@ -6,7 +6,7 @@
 class PackageParserForDouble : public PackageParser
 {
 public:
-  PackageParserForDouble();
+  PackageParserForDouble(log4cplus::Logger logger);
   ~PackageParserForDouble();
 
   void parseAndPrintPackage(QByteArray data, qint32 clientId) override;

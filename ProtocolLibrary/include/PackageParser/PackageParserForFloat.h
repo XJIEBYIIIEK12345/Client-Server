@@ -6,7 +6,7 @@
 class PackageParserForFloat : public PackageParser
 {
 public:
-  PackageParserForFloat();
+  PackageParserForFloat(log4cplus::Logger logger);
   ~PackageParserForFloat();
 
   void parseAndPrintPackage(QByteArray data, qint32 clientId) override;

@@ -2,31 +2,31 @@
 #include "JsonProtocol.h"
 #include "XmlProtocol.h"
 
-IProtocol* IProtocol::makeProtocol(ProtocolDataType type)
+IProtocol* IProtocol::makeProtocol(ProtocolDataType type, log4cplus::Logger logger)
 {
   switch (type)
   {
   case ProtocolDataType::JsonType:
-    return new JsonProtocol();
+    return new JsonProtocol(logger);
   case ProtocolDataType::BinType:
-    // return new BinProtocol();
+    // return new BinProtocol(logger);
   case ProtocolDataType::XmlType:
-    return new XmlProtocol();
+    return new XmlProtocol(logger);
   default:
-    return new JsonProtocol();
+    return new JsonProtocol(logger);
   }
 }
 
-IProtocol* IProtocol::makeProtocol(QString type)
+IProtocol* IProtocol::makeProtocol(QString type, log4cplus::Logger logger)
 {
   if (type == "json")
-    return new JsonProtocol();
+    return new JsonProtocol(logger);
   // else if (type == "bin")
-  //     return new BinProtocol();
+  //     return new BinProtocol(logger);
   else if (type == "xml")
-    return new XmlProtocol();
+    return new XmlProtocol(logger);
   else
-    return new JsonProtocol();
+    return new JsonProtocol(logger);
 }
 
 QString IProtocol::toString(ProtocolDataType type)

@@ -2,8 +2,9 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 
-WorkerThread::WorkerThread(quintptr socketDescriptor)
+WorkerThread::WorkerThread(log4cplus::Logger logger, quintptr socketDescriptor)
 {
+  m_logger = logger;
   m_socketDescriptor = socketDescriptor;
 }
 
@@ -28,7 +29,8 @@ void WorkerThread::process()
   }
   else
   {
-    qDebug() << "System error:" << m_socket->errorString();
+    LOG4CPLUS_ERROR(m_logger,
+                    "System error: " << m_socket->errorString().toStdString());
     delete m_socket;
     return;
   }
@@ -53,8 +55,8 @@ void WorkerThread::stop()
   m_socket->close();
   m_socket->deleteLater();
 
-  qDebug() << "The worker with id:" << m_socketDescriptor << "socket:" << m_socket
-           << "was closed";
+  LOG4CPLUS_TRACE(m_logger,
+                  "The worker with id: " << m_socketDescriptor << " was stopped");
 
   m_socket = nullptr;
   m_socketDescriptor = 0;
@@ -72,7 +74,7 @@ void WorkerThread::logErrorAndCloseSocket()
 {
   if (!m_socket)
     return;
-  qDebug() << "Error:" << m_socket->errorString();
+  LOG4CPLUS_ERROR(m_logger, m_socket->errorString().toStdString());
   m_socket->close();
 }
 
@@ -83,24 +85,24 @@ void WorkerThread::logClientState()
   switch (m_socket->state())
   {
   case QAbstractSocket::HostLookupState:
-    qDebug() << "Client with id" << m_socket->socketDescriptor()
-             << "is looking for host..." << "\n";
+    LOG4CPLUS_INFO(m_logger, "Client with id: " << m_socket->socketDescriptor()
+                                                << " is looking for host...");
     break;
   case QAbstractSocket::ConnectingState:
-    qDebug() << "Client with id" << m_socket->socketDescriptor()
-             << "is connecting to server..." << "\n";
+    LOG4CPLUS_INFO(m_logger, "Client with id: " << m_socket->socketDescriptor()
+                                                << " is connecting to server...");
     break;
   case QAbstractSocket::ConnectedState:
-    qDebug() << "Client with id" << m_socket->socketDescriptor() << "is connected"
-             << "\n";
+    LOG4CPLUS_INFO(m_logger, "Client with id: " << m_socket->socketDescriptor()
+                                                << " is connected");
     break;
   case QAbstractSocket::ClosingState:
-    qDebug() << "Client with id" << m_socket->socketDescriptor() << "is closing..."
-             << "\n";
+    LOG4CPLUS_INFO(m_logger, "Client with id: " << m_socket->socketDescriptor()
+                                                << " is closing...");
     break;
   case QAbstractSocket::UnconnectedState:
-    qDebug() << "Client with id" << m_socket->socketDescriptor() << "is unconnected"
-             << "\n";
+    LOG4CPLUS_INFO(m_logger, "Client with id: " << m_socket->socketDescriptor()
+                                                << " is unconnected");
     break;
   default:
     break;

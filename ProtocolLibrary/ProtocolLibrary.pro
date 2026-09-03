@@ -7,6 +7,10 @@ DEFINES += PROTOCOLLIBRARY_LIBRARY
 
 CONFIG += c++17
 
+CONFIG += link_pkgconfig
+
+PKGCONFIG += log4cplus
+
 INCLUDEPATH += $$PWD/include
 INCLUDEPATH += $$PWD/src
 INCLUDEPATH += $$PWD/include/SineGenerator

@@ -6,7 +6,7 @@
 #include <QDomDocument>
 #include <QDomElement>
 
-XmlProtocol::XmlProtocol() {}
+XmlProtocol::XmlProtocol(log4cplus::Logger logger) { m_logger = logger; }
 
 XmlProtocol::~XmlProtocol() {}
 
@@ -64,9 +64,11 @@ QByteArray XmlProtocol::encodeData(Package* pack)
   }
   break;
   default:
-    qDebug() << "This type of message is unsupported";
+    LOG4CPLUS_WARN(m_logger, "This type of message is unsupported");
     return nullptr;
   }
+
+  LOG4CPLUS_TRACE(m_logger, "This send: " << doc.toString().toStdString());
 
   QByteArray data = doc.toByteArray();
   return data;
@@ -125,16 +127,16 @@ Package* XmlProtocol::decodeData()
                                   root.firstChildElement("flag").text().toInt());
       break;
     case MessageType::Count:
-      qDebug() << "This type of message is unsupported";
+      LOG4CPLUS_WARN(m_logger, "This type of message is unsupported");
       return nullptr;
       break;
     }
   }
   else
   {
-    qDebug() << "Error: message:" << errorMsg << "in line:" << errorLine
-             << ", column:" << errorColumn;
-
+    LOG4CPLUS_ERROR(m_logger, "Message: " << errorMsg.toStdString()
+                                          << " in line: " << errorLine
+                                          << ", column: " << errorColumn);
     return nullptr;
   }
 }

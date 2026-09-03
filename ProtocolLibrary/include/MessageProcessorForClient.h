@@ -9,7 +9,7 @@ class MessageProcessorForClient : public QObject
   Q_OBJECT
 
 public:
-  MessageProcessorForClient(ProtocolDataType protocol);
+  MessageProcessorForClient(ProtocolDataType protocol, log4cplus::Logger logger);
   ~MessageProcessorForClient();
 
   void makeDataRequestMessage();
@@ -29,6 +29,7 @@ public:
   int m_timerIdForSend = 0;
   SineGenerator* m_generator = nullptr;
   IProtocol* m_protocol = nullptr;
+  log4cplus::Logger m_logger;
 };
 
 #endif // MESSAGEPROCESSORFORCLIENT_H

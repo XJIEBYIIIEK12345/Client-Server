@@ -9,7 +9,7 @@ class MessageProcessorForServer : public QObject
   Q_OBJECT
 
 public:
-  MessageProcessorForServer(ProtocolDataType protocol);
+  MessageProcessorForServer(ProtocolDataType protocol, log4cplus::Logger logger);
   ~MessageProcessorForServer();
 
   void parseMessage(QByteArray message, quintptr id);
@@ -21,6 +21,7 @@ public:
   IProtocol* m_protocol = nullptr;
   PackageParser* m_parser = nullptr;
   quint32 m_id;
+  log4cplus::Logger m_logger;
 };
 
 #endif // MESSAGEPROCESSORFORSERVER_H

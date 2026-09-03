@@ -5,22 +5,23 @@
 #include "PackageParserForInt32.h"
 #include "PackageParserForInt64.h"
 
-PackageParser* PackageParser::makeParser(PackageParserType type)
+PackageParser* PackageParser::makeParser(PackageParserType type,
+                                         log4cplus::Logger logger)
 {
   switch (type)
   {
   case PackageParserType::PackageParserForInt16:
-    return new PackageParserForInt16();
+    return new PackageParserForInt16(logger);
   case PackageParserType::PackageParserForInt32:
-    return new PackageParserForInt32();
+    return new PackageParserForInt32(logger);
   case PackageParserType::PackageParserForInt64:
-    return new PackageParserForInt64();
+    return new PackageParserForInt64(logger);
   case PackageParserType::PackageParserForFloat:
-    return new PackageParserForFloat();
+    return new PackageParserForFloat(logger);
   case PackageParserType::PackageParserForDouble:
-    return new PackageParserForDouble();
+    return new PackageParserForDouble(logger);
   default:
-    return new PackageParserForInt32();
+    return new PackageParserForInt32(logger);
   }
 }
 

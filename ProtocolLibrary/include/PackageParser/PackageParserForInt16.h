@@ -6,7 +6,7 @@
 class PackageParserForInt16 : public PackageParser
 {
 public:
-  PackageParserForInt16();
+  PackageParserForInt16(log4cplus::Logger logger);
   ~PackageParserForInt16();
 
   void parseAndPrintPackage(QByteArray data, qint32 clientId) override;

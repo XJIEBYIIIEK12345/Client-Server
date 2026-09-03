@@ -6,7 +6,7 @@
 class XmlProtocol : public IProtocol
 {
 public:
-  XmlProtocol();
+  XmlProtocol(log4cplus::Logger logger);
   ~XmlProtocol();
 
   QByteArray encodeData(Package* pack) override;

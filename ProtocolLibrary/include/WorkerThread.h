@@ -3,13 +3,15 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include <log4cplus/logger.h>
+#include <log4cplus/loggingmacros.h>
 
 class WorkerThread : public QObject
 {
   Q_OBJECT
 
 public:
-  WorkerThread(quintptr socketDescriptor = 0);
+  WorkerThread(log4cplus::Logger logger, quintptr socketDescriptor = 0);
 
   void writeToReceiver(QByteArray message);
   quintptr getSocketDescriptor();
@@ -29,6 +31,7 @@ private slots:
 private:
   quintptr m_socketDescriptor;
   QTcpSocket* m_socket = nullptr;
+  log4cplus::Logger m_logger;
 };
 
 #endif // WORKERTHREAD_H

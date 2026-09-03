@@ -1,7 +1,9 @@
 #include "PackageParserForInt16.h"
-#include <QDebug>
 
-PackageParserForInt16::PackageParserForInt16() {}
+PackageParserForInt16::PackageParserForInt16(log4cplus::Logger logger)
+{
+  m_logger = logger;
+}
 
 PackageParserForInt16::~PackageParserForInt16() {}
 
@@ -20,7 +22,10 @@ void PackageParserForInt16::parseAndPrintPackage(QByteArray data, qint32 clientI
            ", ";
   }
 
-  qDebug() << "Server received:" << str << "from Client" << clientId << "\n";
+  LOG4CPLUS_TRACE(m_logger, "Received: " << str.toStdString() << " from Client "
+                                         << clientId << "\n"
+                                         << "\n";);
+  LOG4CPLUS_INFO(m_logger, "Received data from Client " << clientId;);
 
   m_buffer.remove(0, count * sizeof(qint16));
 }
