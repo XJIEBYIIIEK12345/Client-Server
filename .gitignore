@@ -4,4 +4,5 @@ moc_*
 Makefile
 .qmake.stash
 build/
-logs/
+logs/client.log*
+logs/server.log*
