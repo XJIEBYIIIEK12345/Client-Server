@@ -1,21 +1,19 @@
-#ifndef PACKAGEFORDATATOGENERATE_H
-#define PACKAGEFORDATATOGENERATE_H
+#ifndef PACKAGEMETADATA_H
+#define PACKAGEMETADATA_H
 
 #include "Package.h"
 
-class PackageForDataToGenerate : public Package
+class PackageMetaData : public Package
 {
 public:
-  PackageForDataToGenerate();
-  PackageForDataToGenerate(qint32 count, MessageType type, QString valueType,
-                           quint32 bytes);
-  PackageForDataToGenerate(const PackageForDataToGenerate& pack);
-  PackageForDataToGenerate(const QVariantMap& map);
-  ~PackageForDataToGenerate();
+  PackageMetaData();
+  PackageMetaData(qint32 count, QString valueType, quint32 bytes);
+  PackageMetaData(const PackageMetaData& pack);
+  PackageMetaData(const QVariantMap& map);
+  ~PackageMetaData();
 
-  void setPackageForDataToGenerateData(qint32 count, MessageType type,
-                                       QString valueType, quint32 bytes);
-  void setPackageForDataToGenerateData(const PackageForDataToGenerate& pack);
+  void setPackageMetaDataData(qint32 count, QString valueType, quint32 bytes);
+  void setPackageMetaDataData(const PackageMetaData& pack);
 
   QMap<QString, QVariant> valuesToMap() const override;
 
@@ -24,4 +22,4 @@ public:
   quint32 m_bytes;
 };
 
-#endif // PACKAGEFORDATATOGENERATE_H
+#endif // PACKAGEMETADATA_H

@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
   signal(SIGINT, closeClient);
 
   log4cplus::Initializer initializer;
-  log4cplus::PropertyConfigurator config("../clientLog.properties");
+  log4cplus::PropertyConfigurator config("./clientLog.properties");
   config.configure();
   log4cplus::Logger logger =
       log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Client"));

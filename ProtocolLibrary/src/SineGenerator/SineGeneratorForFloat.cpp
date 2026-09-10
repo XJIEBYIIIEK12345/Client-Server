@@ -3,16 +3,12 @@
 
 SineGeneratorForFloat::SineGeneratorForFloat()
 {
+  m_arr = new float[1000];
   m_lastSinePositionInSinusArray = 0;
-
-  const qint16 size = sizeof(float);
-
-  m_block.reserve(size * 1000);
 
   for (int i = 0; i < 1000; ++i)
   {
-    float sineValueForQByteArray = qSin(i * 2 * M_PI / 1000);
-    m_block.append(reinterpret_cast<char*>(&sineValueForQByteArray), size);
+    m_arr[i] = qSin(i * 2 * M_PI / 1000);
   }
 }
 
@@ -22,40 +18,49 @@ SineGeneratorForFloat::SineGeneratorForFloat(quint32 countOfBytes)
   m_countOfBytes = countOfBytes;
 }
 
-SineGeneratorForFloat::~SineGeneratorForFloat() {}
+SineGeneratorForFloat::~SineGeneratorForFloat()
+{
+  if (m_arr != nullptr)
+  {
+    delete m_arr;
+    m_arr = nullptr;
+  }
+}
 
 void SineGeneratorForFloat::setCountOfBytes(quint32 countOfBytes)
 {
   m_countOfBytes = countOfBytes;
 }
 
-QByteArray SineGeneratorForFloat::generateSineForType()
+QVariantList SineGeneratorForFloat::generateSineForType()
 {
-  qint16 size = sizeof(float);
-
-  if (m_lastSinePositionInSinusArray >= quint32(m_block.size() / size))
+  if (m_lastSinePositionInSinusArray >= 1000)
   {
     m_lastSinePositionInSinusArray = 0;
   }
 
-  QByteArray block;
-  block.reserve(m_countOfBytes * size);
+  QVector<float> genVector;
+  genVector.reserve(m_countOfBytes);
 
   quint32 tempBytes = 0;
   while (tempBytes < m_countOfBytes)
   {
-
     quint32 bytesLeft = m_countOfBytes - tempBytes;
-    quint32 bytesAvailable = m_block.size() / size - m_lastSinePositionInSinusArray;
+    quint32 bytesAvailable = 1000 - m_lastSinePositionInSinusArray;
     quint32 chunk = qMin(bytesLeft, bytesAvailable);
 
-    block.append(m_block.constData() + m_lastSinePositionInSinusArray * size,
-                 chunk * size);
+    std::copy_n(m_arr + m_lastSinePositionInSinusArray, chunk,
+                std::back_inserter(genVector));
 
     tempBytes += chunk;
-    m_lastSinePositionInSinusArray =
-        (m_lastSinePositionInSinusArray + chunk) % (m_block.size() / size);
+    m_lastSinePositionInSinusArray = (m_lastSinePositionInSinusArray + chunk) % 1000;
   }
 
-  return block;
+  QList<float> genList = genVector.toList();
+  QVariantList genVariantList;
+  genVariantList.reserve(genList.size());
+
+  std::copy(genList.begin(), genList.end(), std::back_inserter(genVariantList));
+
+  return genVariantList;
 }

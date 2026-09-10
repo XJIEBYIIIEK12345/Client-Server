@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h1>Server</h1>
+<p>Count of connected clients: <span id="clients-count">%1</span></p>
+<script>
+ function updateClients() {
+            fetch('/')
+                .then(response => {
+                    if (!response.ok) throw new Error('Error');
+                    return response.text();
+                })
+                .then(htmlText => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlText, 'text/html');
+                    const newCount = doc.getElementById('clients-count').innerText;
+                    document.getElementById('clients-count').innerText = newCount;
+                })
+                .catch(error => {
+                    console.error('Unable to get data:', error);
+                    document.getElementById('clients-count').innerText = '?';
+                });
+        }
+        setInterval(updateClients, 1000);
+</script> 
+</body>
+</html>
+

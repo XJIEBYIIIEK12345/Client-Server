@@ -1,19 +1,30 @@
 #include "JsonProtocol.h"
-#include "PackageForDataToGenerate.h"
-#include "PackageForGeneratedData.h"
-#include "PackageForSignal.h"
+#include "PackageDataArray.h"
+#include "PackageMetaData.h"
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 
 JsonProtocol::JsonProtocol(log4cplus::Logger logger) { m_logger = logger; }
 
-JsonProtocol::~JsonProtocol() {}
+JsonProtocol::~JsonProtocol()
+{
+  LOG4CPLUS_INFO(m_logger, typeid(this).name() << " was destroyed\n");
+}
 
 QByteArray JsonProtocol::encodeData(Package* pack)
 {
   const char endByte = '\n';
 
   QJsonObject jsonObj = QJsonObject::fromVariantMap(pack->valuesToMap());
+
+  if (jsonObj.contains("data"))
+  {
+    QJsonArray jsonArr =
+        QJsonArray::fromVariantList(jsonObj.value("data").toVariant().toList());
+
+    jsonObj.insert("data", jsonArr);
+  }
 
   QJsonDocument jsonDoc(jsonObj);
 
@@ -50,16 +61,16 @@ Package* JsonProtocol::decodeData()
     switch (MessageType(jsonObj["type"].toInt()))
     {
     case MessageType::MetaDataRequest:
-      return new PackageForSignal(jsonObj.toVariantMap());
+      return new Package(jsonObj.toVariantMap());
       break;
     case MessageType::MetaDataResponse:
-      return new PackageForDataToGenerate(jsonObj.toVariantMap());
+      return new PackageMetaData(jsonObj.toVariantMap());
       break;
     case MessageType::SinAnswer:
-      return new PackageForGeneratedData(jsonObj.toVariantMap());
+      return new PackageDataArray(jsonObj.toVariantMap());
       break;
     case MessageType::SinConfirmation:
-      return new PackageForSignal(jsonObj.toVariantMap());
+      return new Package(jsonObj.toVariantMap());
       break;
     case MessageType::Count:
       LOG4CPLUS_WARN(m_logger, "This type of message is unsupported");
@@ -68,5 +79,9 @@ Package* JsonProtocol::decodeData()
     }
   }
   else
+  {
+    delete err;
+    err = nullptr;
     return nullptr;
+  }
 }

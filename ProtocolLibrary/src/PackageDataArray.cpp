@@ -1,54 +1,50 @@
 #include "Package.h"
-#include "PackageForGeneratedData.h"
+#include "PackageDataArray.h"
 
-PackageForGeneratedData::PackageForGeneratedData()
+PackageDataArray::PackageDataArray()
   : Package()
 {}
 
-PackageForGeneratedData::PackageForGeneratedData(qint32 id, MessageType type,
-                                                 QByteArray data)
-  : Package(id, type)
+PackageDataArray::PackageDataArray(qint32 id, QVariantList data)
+  : Package(id, MessageType::SinAnswer)
 {
   m_data = data;
 }
 
-PackageForGeneratedData::PackageForGeneratedData(const PackageForGeneratedData& pack)
+PackageDataArray::PackageDataArray(const PackageDataArray& pack)
   : Package(pack)
 {
   m_data = pack.m_data;
 }
 
-PackageForGeneratedData::PackageForGeneratedData(const QVariantMap& map)
+PackageDataArray::PackageDataArray(const QVariantMap& map)
 {
   m_id = map["id"].toInt();
   m_type = MessageType(map["type"].toInt());
-  m_data = QByteArray::fromBase64(map["data"].toByteArray());
+  m_data = map["data"].toList();
 }
 
-PackageForGeneratedData::~PackageForGeneratedData() {}
+PackageDataArray::~PackageDataArray() {}
 
-void PackageForGeneratedData::setPackageForGeneratedDataData(qint32 id,
-                                                             MessageType type,
-                                                             QByteArray data)
+void PackageDataArray::setPackageDataArrayData(qint32 id, QVariantList data)
 {
   m_id = id;
-  m_type = type;
+  m_type = MessageType::SinAnswer;
   m_data = data;
 }
 
-void PackageForGeneratedData::setPackageForGeneratedDataData(
-    const PackageForGeneratedData& pack)
+void PackageDataArray::setPackageDataArrayData(const PackageDataArray& pack)
 {
   m_id = pack.m_id;
   m_type = pack.m_type;
   m_data = pack.m_data;
 }
 
-QMap<QString, QVariant> PackageForGeneratedData::valuesToMap() const
+QMap<QString, QVariant> PackageDataArray::valuesToMap() const
 {
   QMap<QString, QVariant> map = Package::valuesToMap();
 
-  map.insert("data", m_data.toBase64());
+  map.insert("data", m_data);
 
   return map;
 }

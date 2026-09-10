@@ -12,6 +12,7 @@ class Server : public QTcpServer
 public:
   explicit Server(quint16 port, ProtocolDataType protocol, log4cplus::Logger logger,
                   QObject* parent = nullptr);
+  ~Server();
 
 signals:
   void clientStartConnecting(quintptr socketDescriptor);

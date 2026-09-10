@@ -20,6 +20,11 @@ Server::Server(quint16 port, ProtocolDataType protocol, log4cplus::Logger logger
   }
 }
 
+Server::~Server()
+{
+  LOG4CPLUS_INFO(m_logger, typeid(this).name() << " was destroyed\n");
+}
+
 void Server::incomingConnection(qintptr socketDescriptor)
 {
   emit clientStartConnecting(socketDescriptor);

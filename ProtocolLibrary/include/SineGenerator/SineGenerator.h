@@ -1,8 +1,7 @@
 #ifndef SINEGENERATOR_H
 #define SINEGENERATOR_H
 
-#include <QByteArray>
-#include <QString>
+#include <QVariant>
 #include <log4cplus/logger.h>
 #include <log4cplus/loggingmacros.h>
 
@@ -19,13 +18,12 @@ class SineGenerator
 {
 public:
   virtual ~SineGenerator() = default;
-  virtual QByteArray generateSineForType() = 0;
+  virtual QVariantList generateSineForType() = 0;
   virtual void setCountOfBytes(quint32 countOfBytes) = 0;
 
   static SineGenerator* makeGenerator(QString str);
 
 protected:
-  QByteArray m_block;
   quint32 m_lastSinePositionInSinusArray;
   quint32 m_countOfBytes;
 };

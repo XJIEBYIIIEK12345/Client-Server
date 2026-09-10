@@ -14,6 +14,8 @@ PKGCONFIG += log4cplus
 SOURCES += \
         Server.cpp \
         main.cpp \
+        WorkerThread.cpp \
+        MultithreadManager.cpp \
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -22,10 +24,12 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     Server.h \
+    WorkerThread.h \
+    MultithreadManager.h \
 
 INCLUDEPATH += $$PWD/../ProtocolLibrary/include
 INCLUDEPATH += $$PWD/../ProtocolLibrary/include/SineGenerator
-INCLUDEPATH += $$PWD/../ProtocolLibrary/include/PackageParser
+INCLUDEPATH += $$PWD/../ProtocolLibrary/include/DataPrinter
 
 QMAKE_LFLAGS += -Wl,-rpath,$$OUT_PWD/../ProtocolLibrary
 

@@ -1,25 +1,24 @@
-#ifndef PACKAGEFORGENERATEDDATA_H
-#define PACKAGEFORGENERATEDDATA_H
+#ifndef PackageDataArray_H
+#define PackageDataArray_H
 
 #include "Package.h"
 
-class PackageForGeneratedData : public Package
+class PackageDataArray : public Package
 {
 public:
-  PackageForGeneratedData();
-  PackageForGeneratedData(qint32 count, MessageType type, QByteArray data);
-  PackageForGeneratedData(const PackageForGeneratedData& pack);
-  PackageForGeneratedData(const QVariantMap& map);
-  ~PackageForGeneratedData();
+  PackageDataArray();
+  PackageDataArray(qint32 count, QVariantList data);
+  PackageDataArray(const PackageDataArray& pack);
+  PackageDataArray(const QVariantMap& map);
+  ~PackageDataArray();
 
-  void setPackageForGeneratedDataData(qint32 count, MessageType type,
-                                      QByteArray data);
-  void setPackageForGeneratedDataData(const PackageForGeneratedData& pack);
+  void setPackageDataArrayData(qint32 count, QVariantList data);
+  void setPackageDataArrayData(const PackageDataArray& pack);
 
   QMap<QString, QVariant> valuesToMap() const override;
 
 public:
-  QByteArray m_data;
+  QVariantList m_data;
 };
 
-#endif // PACKAGEFORGENERATEDDATA_H
+#endif // PackageDataArray_H

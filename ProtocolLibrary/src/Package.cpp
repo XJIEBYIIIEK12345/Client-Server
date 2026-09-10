@@ -16,6 +16,12 @@ Package::Package(const Package& pack)
   m_type = pack.m_type;
 }
 
+Package::Package(const QVariantMap& map)
+{
+  m_id = map["id"].toInt();
+  m_type = MessageType(map["type"].toInt());
+}
+
 Package::~Package() {}
 
 void Package::setPackageData(qint32 id, MessageType type)

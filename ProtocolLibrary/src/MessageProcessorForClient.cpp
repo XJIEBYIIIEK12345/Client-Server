@@ -1,8 +1,7 @@
 #include "MessageProcessorForClient.h"
 #include "Package.h"
-#include "PackageForDataToGenerate.h"
-#include "PackageForGeneratedData.h"
-#include "PackageForSignal.h"
+#include "PackageDataArray.h"
+#include "PackageMetaData.h"
 #include <QTimerEvent>
 
 MessageProcessorForClient::MessageProcessorForClient(ProtocolDataType protocol,
@@ -24,11 +23,14 @@ MessageProcessorForClient::~MessageProcessorForClient()
     delete m_protocol;
     m_protocol = nullptr;
   }
+
+  LOG4CPLUS_INFO(m_logger, typeid(this).name() << " was destroyed\n");
 }
 
 void MessageProcessorForClient::makeDataRequestMessage()
 {
-  Package* pack = new PackageForSignal(0, MessageType::MetaDataRequest, true);
+  Package* pack = new Package(0, MessageType::MetaDataRequest);
+
   QByteArray message = m_protocol->encodeData(pack);
 
   emit appearedGeneratedArray(message);
@@ -51,8 +53,7 @@ void MessageProcessorForClient::parseMessage(QByteArray message)
     {
     case MessageType::MetaDataResponse:
     {
-      PackageForDataToGenerate* packageFromSender =
-          dynamic_cast<PackageForDataToGenerate*>(pack);
+      PackageMetaData* packageFromSender = dynamic_cast<PackageMetaData*>(pack);
 
       m_generator = SineGenerator::makeGenerator(packageFromSender->m_valueType);
       m_generator->setCountOfBytes(packageFromSender->m_bytes);
@@ -89,12 +90,11 @@ void MessageProcessorForClient::parseMessage(QByteArray message)
 
 void MessageProcessorForClient::generateMessage()
 {
-  QByteArray data = m_generator->generateSineForType();
+  QVariantList data = m_generator->generateSineForType();
 
-  Package* pack = new PackageForGeneratedData(1, MessageType::SinAnswer, data);
+  Package* pack = new PackageDataArray(1, data);
   QByteArray message = m_protocol->encodeData(pack);
 
-  // LOG4CPLUS_TRACE(m_logger, "This send: " << data.toBase64().toStdString());
   LOG4CPLUS_INFO(m_logger, "This send data");
 
   emit appearedGeneratedArray(message);

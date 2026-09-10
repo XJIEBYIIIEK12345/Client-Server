@@ -15,10 +15,11 @@ enum MessageType
 
 class Package
 {
-protected:
+public:
   Package();
   Package(qint32 id, MessageType type);
   Package(const Package& pack);
+  Package(const QVariantMap& map);
 
 public:
   virtual ~Package();

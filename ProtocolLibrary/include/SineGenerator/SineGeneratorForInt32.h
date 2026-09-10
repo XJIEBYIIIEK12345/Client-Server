@@ -11,7 +11,10 @@ public:
   ~SineGeneratorForInt32();
 
   void setCountOfBytes(quint32 countOfBytes) override;
-  QByteArray generateSineForType() override;
+  QVariantList generateSineForType() override;
+
+private:
+  qint32* m_arr;
 };
 
 #endif // SINEGENERATORFORINT32_H

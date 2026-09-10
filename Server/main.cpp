@@ -2,6 +2,7 @@
 #include "Server.h"
 #include <QCommandLineParser>
 #include <QCoreApplication>
+#include <QDir>
 #include <QMetaType>
 #include <log4cplus/configurator.h>
 #include <log4cplus/initializer.h>
@@ -23,7 +24,7 @@ int main(int argc, char* argv[])
   signal(SIGINT, closeServer);
 
   log4cplus::Initializer initializer;
-  log4cplus::PropertyConfigurator config("../serverLog.properties");
+  log4cplus::PropertyConfigurator config("./serverLog.properties");
   config.configure();
   log4cplus::Logger logger =
       log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Server"));

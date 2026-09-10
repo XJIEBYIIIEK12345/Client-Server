@@ -2,7 +2,7 @@
 #define MESSAGEPROCESSORFORSERVER_H
 
 #include "IProtocol.h"
-#include "PackageParser.h"
+#include "DataPrinter.h"
 
 class MessageProcessorForServer : public QObject
 {
@@ -13,15 +13,22 @@ public:
   ~MessageProcessorForServer();
 
   void parseMessage(QByteArray message, quintptr id);
+  void setCountOfClientsFromManager(qint32 count);
+
+private:
+  bool isHttpRequest(QByteArray message);
+  void processHttpRequest(QByteArray message);
 
 signals:
   void appearedGeneratedArray(QByteArray message);
+  void needCountOfClients();
 
-public:
+private:
   IProtocol* m_protocol = nullptr;
-  PackageParser* m_parser = nullptr;
+  DataPrinter* m_printer = nullptr;
   quint32 m_id;
   log4cplus::Logger m_logger;
+  qint32 m_countOfClientsFromManager;
 };
 
 #endif // MESSAGEPROCESSORFORSERVER_H

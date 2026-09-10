@@ -2,6 +2,11 @@
 #include "JsonProtocol.h"
 #include "XmlProtocol.h"
 
+IProtocol::~IProtocol()
+{
+  LOG4CPLUS_INFO(m_logger, typeid(this).name() << " was destroyed\n");
+}
+
 IProtocol* IProtocol::makeProtocol(ProtocolDataType type, log4cplus::Logger logger)
 {
   switch (type)

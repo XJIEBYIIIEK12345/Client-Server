@@ -3,11 +3,8 @@
 
 SineGeneratorForInt16::SineGeneratorForInt16()
 {
+  m_arr = new qint16[1000];
   m_lastSinePositionInSinusArray = 0;
-
-  const qint16 size = sizeof(qint16);
-
-  m_block.reserve(size * 1000);
 
   for (int i = 0; i < 1000; ++i)
   {
@@ -19,7 +16,7 @@ SineGeneratorForInt16::SineGeneratorForInt16()
         : tempValue < double(std::numeric_limits<qint16>::min())
             ? std::numeric_limits<qint16>::min()
             : qint16(tempValue);
-    m_block.append(reinterpret_cast<char*>(&sineValueForQByteArray), size);
+    m_arr[i] = sineValueForQByteArray;
   }
 }
 
@@ -29,40 +26,49 @@ SineGeneratorForInt16::SineGeneratorForInt16(quint32 countOfBytes)
   m_countOfBytes = countOfBytes;
 }
 
-SineGeneratorForInt16::~SineGeneratorForInt16() {}
+SineGeneratorForInt16::~SineGeneratorForInt16()
+{
+  if (m_arr != nullptr)
+  {
+    delete m_arr;
+    m_arr = nullptr;
+  }
+}
 
 void SineGeneratorForInt16::setCountOfBytes(quint32 countOfBytes)
 {
   m_countOfBytes = countOfBytes;
 }
 
-QByteArray SineGeneratorForInt16::generateSineForType()
+QVariantList SineGeneratorForInt16::generateSineForType()
 {
-  qint16 size = sizeof(qint16);
-
-  if (m_lastSinePositionInSinusArray >= quint32(m_block.size() / size))
+  if (m_lastSinePositionInSinusArray >= 1000)
   {
     m_lastSinePositionInSinusArray = 0;
   }
 
-  QByteArray block;
-  block.reserve(m_countOfBytes * size);
+  QVector<qint16> genVector;
+  genVector.reserve(m_countOfBytes);
 
   quint32 tempBytes = 0;
   while (tempBytes < m_countOfBytes)
   {
-
     quint32 bytesLeft = m_countOfBytes - tempBytes;
-    quint32 bytesAvailable = m_block.size() / size - m_lastSinePositionInSinusArray;
+    quint32 bytesAvailable = 1000 - m_lastSinePositionInSinusArray;
     quint32 chunk = qMin(bytesLeft, bytesAvailable);
 
-    block.append(m_block.constData() + m_lastSinePositionInSinusArray * size,
-                 chunk * size);
+    std::copy_n(m_arr + m_lastSinePositionInSinusArray, chunk,
+                std::back_inserter(genVector));
 
     tempBytes += chunk;
-    m_lastSinePositionInSinusArray =
-        (m_lastSinePositionInSinusArray + chunk) % (m_block.size() / size);
+    m_lastSinePositionInSinusArray = (m_lastSinePositionInSinusArray + chunk) % 1000;
   }
 
-  return block;
+  QList<qint16> genList = genVector.toList();
+  QVariantList genVariantList;
+  genVariantList.reserve(genList.size());
+
+  std::copy(genList.begin(), genList.end(), std::back_inserter(genVariantList));
+
+  return genVariantList;
 }

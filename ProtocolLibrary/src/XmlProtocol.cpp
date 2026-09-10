@@ -1,14 +1,16 @@
 #include "XmlProtocol.h"
 #include "Package.h"
-#include "PackageForDataToGenerate.h"
-#include "PackageForGeneratedData.h"
-#include "PackageForSignal.h"
+#include "PackageMetaData.h"
+#include "PackageDataArray.h"
 #include <QDomDocument>
 #include <QDomElement>
 
 XmlProtocol::XmlProtocol(log4cplus::Logger logger) { m_logger = logger; }
 
-XmlProtocol::~XmlProtocol() {}
+XmlProtocol::~XmlProtocol()
+{
+  LOG4CPLUS_INFO(m_logger, typeid(this).name() << " was destroyed\n");
+}
 
 QByteArray XmlProtocol::encodeData(Package* pack)
 {
@@ -29,38 +31,44 @@ QByteArray XmlProtocol::encodeData(Package* pack)
   {
   case MessageType::MetaDataRequest:
   {
-    PackageForSignal* package = dynamic_cast<PackageForSignal*>(pack);
-    QDomElement flag = doc.createElement("flag");
-    flag.appendChild(doc.createTextNode(QString::number(package->m_flag)));
-    root.appendChild(flag);
   }
   break;
   case MessageType::MetaDataResponse:
   {
-    PackageForDataToGenerate* package =
-        dynamic_cast<PackageForDataToGenerate*>(pack);
+    PackageMetaData* package = dynamic_cast<PackageMetaData*>(pack);
     QDomElement valueType = doc.createElement("valueType");
     valueType.appendChild(doc.createTextNode(package->m_valueType));
     root.appendChild(valueType);
     QDomElement bytes = doc.createElement("bytes");
     bytes.appendChild(doc.createTextNode(QString::number(package->m_bytes)));
     root.appendChild(bytes);
+
+    if (package != nullptr)
+    {
+      package = nullptr;
+    }
   }
   break;
   case MessageType::SinAnswer:
   {
-    PackageForGeneratedData* package = dynamic_cast<PackageForGeneratedData*>(pack);
+    PackageDataArray* package = dynamic_cast<PackageDataArray*>(pack);
     QDomElement data = doc.createElement("data");
-    data.appendChild(doc.createTextNode(QString(package->m_data.toBase64())));
+    for (int i = 0; i < package->m_data.size(); ++i)
+    {
+      QDomElement dataElement = doc.createElement("value");
+      dataElement.appendChild(doc.createTextNode(package->m_data[i].toString()));
+      data.appendChild(dataElement);
+    }
     root.appendChild(data);
+
+    if (package != nullptr)
+    {
+      package = nullptr;
+    }
   }
   break;
   case MessageType::SinConfirmation:
   {
-    PackageForSignal* package = dynamic_cast<PackageForSignal*>(pack);
-    QDomElement flag = doc.createElement("flag");
-    flag.appendChild(doc.createTextNode(QString::number(package->m_flag)));
-    root.appendChild(flag);
   }
   break;
   default:
@@ -109,22 +117,54 @@ Package* XmlProtocol::decodeData()
     switch (messageType)
     {
     case MessageType::MetaDataRequest:
-      return new PackageForSignal(id, messageType,
-                                  root.firstChildElement("flag").text().toInt());
+      return new Package(id, messageType);
       break;
     case MessageType::MetaDataResponse:
-      return new PackageForDataToGenerate(
-          id, messageType, root.firstChildElement("valueType").text(),
-          root.firstChildElement("bytes").text().toInt());
+      return new PackageMetaData(id, root.firstChildElement("valueType").text(),
+                                 root.firstChildElement("bytes").text().toInt());
       break;
     case MessageType::SinAnswer:
-      return new PackageForGeneratedData(
-          id, messageType,
-          QByteArray::fromBase64(root.firstChildElement("data").text().toUtf8()));
-      break;
+    {
+      QVariantList variantList;
+      QDomNodeList xmlList = doc.elementsByTagName("value");
+
+      variantList.reserve(xmlList.size());
+
+      for (int i = 0; i < xmlList.size(); ++i)
+      {
+        QDomNode node = xmlList.at(i);
+        if (node.isElement())
+        {
+          QString element = node.toElement().text();
+
+          bool isInt = false;
+          bool isDouble = false;
+
+          qint64 intVal = element.toLongLong(&isInt);
+
+          if (isInt)
+          {
+            variantList.append(QVariant::fromValue(intVal));
+          }
+          else
+          {
+            double doubleVal = element.toDouble(&isDouble);
+            if (isDouble)
+            {
+              variantList.append(QVariant::fromValue(doubleVal));
+            }
+            else
+            {
+              variantList.append(QVariant::fromValue(element));
+            }
+          }
+        }
+      }
+      return new PackageDataArray(id, variantList);
+    }
+    break;
     case MessageType::SinConfirmation:
-      return new PackageForSignal(id, messageType,
-                                  root.firstChildElement("flag").text().toInt());
+      return new Package(id, messageType);
       break;
     case MessageType::Count:
       LOG4CPLUS_WARN(m_logger, "This type of message is unsupported");

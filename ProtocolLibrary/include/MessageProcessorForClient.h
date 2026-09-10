@@ -25,7 +25,7 @@ signals:
   void appearedGeneratedArray(QByteArray message);
   void needToConfirmArray();
 
-public:
+private:
   int m_timerIdForSend = 0;
   SineGenerator* m_generator = nullptr;
   IProtocol* m_protocol = nullptr;

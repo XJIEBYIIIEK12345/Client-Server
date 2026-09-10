@@ -28,6 +28,8 @@ Client::~Client()
     m_socket->deleteLater();
     m_socket = nullptr;
   }
+
+  LOG4CPLUS_INFO(m_logger, typeid(this).name() << " was destroyed\n");
 }
 
 void Client::connect()
@@ -123,6 +125,11 @@ void Client::connectToServer()
 {
   LOG4CPLUS_INFO(m_logger, "Connecting...");
   m_socket->connectToHost(QHostAddress(m_address), m_port, QTcpSocket::ReadWrite);
+
+  if (m_timerIdForConnect == 0)
+  {
+    m_timerIdForConnect = startTimer(5000);
+  }
 }
 
 void Client::writeToServer(QByteArray message) { m_socket->write(message); }
@@ -131,6 +138,12 @@ void Client::timerEvent(QTimerEvent* event)
 {
   if (event->timerId() == m_timerIdForConnect)
   {
+    if (m_timerIdForConnect != 0)
+    {
+      killTimer(m_timerIdForConnect);
+      m_timerIdForConnect = 0;
+    }
+
     if ((m_socket->state() != QAbstractSocket::ConnectingState) &&
         (m_socket->state() != QAbstractSocket::ConnectedState))
     {

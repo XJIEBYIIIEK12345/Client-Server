@@ -17,7 +17,7 @@ enum ProtocolDataType
 class IProtocol
 {
 public:
-  virtual ~IProtocol() = default;
+  virtual ~IProtocol();
 
   static IProtocol* makeProtocol(ProtocolDataType type, log4cplus::Logger logger);
   static IProtocol* makeProtocol(QString type, log4cplus::Logger logger);
@@ -25,6 +25,7 @@ public:
   virtual QByteArray encodeData(Package* pack) = 0;
   virtual Package* decodeData() = 0;
 
+public:
   QByteArray m_buffer;
   log4cplus::Logger m_logger;
 };
