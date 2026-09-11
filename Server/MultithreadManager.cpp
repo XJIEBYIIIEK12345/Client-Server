@@ -14,17 +14,14 @@ MultithreadManager::~MultithreadManager()
   LOG4CPLUS_INFO(m_logger, typeid(this).name() << " was destroyed\n");
 }
 
-void MultithreadManager::getCountOfClients()
+void MultithreadManager::setCountOfClientsOnDisconnect()
 {
-  emit countOfClientsResponse(m_countOfClients);
+  m_countOfClients -= 1;
+  emit countOfClientsChanged(m_countOfClients);
 }
-
-void MultithreadManager::setCountOfClientsOnDisconnect() { m_countOfClients -= 1; }
 
 void MultithreadManager::clientConnectedToServer(quintptr socketDescriptor)
 {
-  m_countOfClients += 1;
-
   WorkerThread* worker = new WorkerThread(m_logger, socketDescriptor);
   QThread* thread = new QThread;
   worker->moveToThread(thread);
@@ -33,9 +30,7 @@ void MultithreadManager::clientConnectedToServer(quintptr socketDescriptor)
 
   QObject::connect(worker, &WorkerThread::bytesReceived, processor,
                    &MessageProcessorForServer::parseMessage);
-  QObject::connect(processor, &MessageProcessorForServer::needCountOfClients, this,
-                   &MultithreadManager::getCountOfClients);
-  QObject::connect(this, &MultithreadManager::countOfClientsResponse, processor,
+  QObject::connect(this, &MultithreadManager::countOfClientsChanged, processor,
                    &MessageProcessorForServer::setCountOfClientsFromManager);
   QObject::connect(processor, &MessageProcessorForServer::appearedGeneratedArray,
                    worker, &WorkerThread::writeToReceiver);
@@ -49,6 +44,9 @@ void MultithreadManager::clientConnectedToServer(quintptr socketDescriptor)
   QObject::connect(worker, &WorkerThread::finished, this,
                    &MultithreadManager::setCountOfClientsOnDisconnect);
   QObject::connect(worker, &QObject::destroyed, thread, &QThread::quit);
+
+  m_countOfClients += 1;
+  emit countOfClientsChanged(m_countOfClients);
 
   thread->start();
 }

@@ -12,12 +12,11 @@ public:
   ~MultithreadManager();
 
   void clientConnectedToServer(quintptr socketDescriptor);
-  void getCountOfClients();
   void setCountOfClientsOnDisconnect();
 
 signals:
   void cleanAll();
-  void countOfClientsResponse(qint32 countOfClients);
+  void countOfClientsChanged(qint32 countOfClients);
 
 private:
   void clean();

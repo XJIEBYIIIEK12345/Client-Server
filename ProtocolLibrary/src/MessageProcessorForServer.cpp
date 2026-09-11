@@ -52,8 +52,6 @@ void MessageProcessorForServer::processHttpRequest(QByteArray message)
     LOG4CPLUS_ERROR(m_logger, "Error to parse HTTP request");
   else
   {
-    emit needCountOfClients();
-
     QByteArray response;
     QByteArray status;
     QByteArray data;

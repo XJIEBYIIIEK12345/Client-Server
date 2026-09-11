@@ -21,7 +21,6 @@ private:
 
 signals:
   void appearedGeneratedArray(QByteArray message);
-  void needCountOfClients();
 
 private:
   IProtocol* m_protocol = nullptr;
