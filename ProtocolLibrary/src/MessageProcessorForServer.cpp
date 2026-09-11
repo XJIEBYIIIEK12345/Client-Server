@@ -4,6 +4,8 @@
 #include "PackageDataArray.h"
 #include "PackageMetaData.h"
 #include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QRandomGenerator64>
 
 MessageProcessorForServer::MessageProcessorForServer(ProtocolDataType protocol,
@@ -54,26 +56,47 @@ void MessageProcessorForServer::processHttpRequest(QByteArray message)
 
     QByteArray response;
     QByteArray status;
-    QByteArray html;
+    QByteArray data;
+    QByteArray contentType;
 
     QFile file("Server/page.html");
     if (file.open(QIODevice::ReadOnly))
     {
-      QString htmlStr = QString::fromUtf8(file.readAll());
-      file.close();
-      status = "200 OK";
-      html = htmlStr.arg(m_countOfClientsFromManager - 1).toUtf8();
+      if (message.indexOf("GET / ") >= 0)
+      {
+        QString htmlStr = QString::fromUtf8(file.readAll());
+        file.close();
+        status = "200 OK";
+        contentType = "text/html";
+        data = htmlStr.toUtf8();
+      }
+      else if (message.indexOf("GET /data ") >= 0)
+      {
+        status = "200 OK";
+        contentType = "application/json";
+        QJsonObject jsonObj;
+        jsonObj.insert("count", QJsonValue(m_countOfClientsFromManager));
+        QJsonDocument jsonDoc(jsonObj);
+        data = jsonDoc.toJson();
+      }
+      else
+      {
+        status = "404 Not Found";
+        contentType = "application/json";
+      }
     }
     else
     {
       status = "404 Not Found";
+      contentType = "application/json";
     }
+
     response.append("HTTP/1.1 " + status + "\r\n");
-    response.append("Content-Type: text/html\r\n");
-    response.append("Content-Length: " + QByteArray::number(html.size()) + "\r\n");
+    response.append("Content-Type: " + contentType + "\r\n");
+    response.append("Content-Length: " + QByteArray::number(data.size()) + "\r\n");
     response.append("Connection: close\r\n");
     response.append("\r\n");
-    response.append(html);
+    response.append(data);
 
     LOG4CPLUS_TRACE(m_logger, response.toStdString());
 

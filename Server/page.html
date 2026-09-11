@@ -3,25 +3,22 @@
 <body>
 <h1>Server</h1>
 <p>Server status: <span id="server-status"></span></p>
-<p>Count of connected clients: <span id="clients-count">%1</span></p>
+<p>Count of connected clients: <span id="clients-count"></span></p>
 <script>
  function updateClients() {
-            fetch('/')
+            fetch('/data')
                 .then(response => {
                     if (!response.ok) throw new Error('Error');
-                    return response.text();
+                    return response.json();
                 })
-                .then(htmlText => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(htmlText, 'text/html');
-                    const newCount = doc.getElementById('clients-count').innerText;
-                    document.getElementById('clients-count').innerText = newCount;
-                    document.getElementById('server-status').innerText = 'avialable.';
+                .then(data => {
+                    document.getElementById('clients-count').innerText = data.count;
+                    document.getElementById('server-status').innerText = 'available.';
                 })
                 .catch(error => {
-                    console.error('Unable to get data:', error);
+                    console.error('Unable to get data:', error);  
                     document.getElementById('clients-count').innerText = '-';
-                    document.getElementById('server-status').innerText = 'unavialable.';
+                    document.getElementById('server-status').innerText = 'unavailable.';
                 });
         }
         setInterval(updateClients, 1000);
